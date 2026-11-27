@@ -708,7 +708,7 @@
     </div>
 
     <section class="summary">
-      <img class="mering-cat" src="mering-cat.png" alt="" aria-hidden="true">
+      <img class="mering-cat" id="meringCat" src="mering-cat.png" alt="" aria-hidden="true">
       <div class="sum-label">이 달 남는 돈</div>
       <div class="sum-value" id="netBalance">0원</div>
       <div class="sum-sub" id="dailyBudget">하루에 얼마나 쓸 수 있는지 계산해요</div>
@@ -1429,6 +1429,14 @@
       var days = daysInMonth(viewYear, viewMonth);
 
       el.netBalance.textContent = (net < 0 ? '-' : '') + won(Math.abs(net));
+      var catEl = document.getElementById('meringCat');
+      if (catEl) {
+        var catSrc = net >= 200000 ? 'mering-cat.png'
+          : net >= 100000 ? 'mering-cat-2.png'
+          : net >= 0 ? 'mering-cat-3.png'
+          : 'mering-cat-4.png';
+        if (catEl.getAttribute('src') !== catSrc) catEl.setAttribute('src', catSrc);
+      }
       el.totalIncome.textContent = '+' + won(totalIn);
       el.totalExpense.textContent = '-' + won(totalOut);
 
