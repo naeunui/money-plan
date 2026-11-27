@@ -344,6 +344,8 @@
       padding-right: 34px;
     }
     .field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .field input:disabled { opacity: .65; }
+    .switch:disabled { opacity: .5; }
     .money-input { position: relative; }
     .money-input input { padding-right: 34px; font-variant-numeric: tabular-nums; }
     .money-input span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); pointer-events: none; }
@@ -1205,6 +1207,9 @@
       $('edDelete').style.display = opts.mode === 'edit' ? '' : 'none';
       $('sheetActions').className = 'sheet-actions' + (opts.mode === 'edit' ? ' with-delete' : '');
 
+      ['fInstall', 'fInstNo', 'fInstTotal'].forEach(function (id) { $(id).disabled = false; });
+      $('instField').style.opacity = '';
+
       updateCategoryOptions();
       updateScopeUI();
       updateInstallmentUI();
@@ -1290,6 +1295,13 @@
 
       var reset = $('resetOverride');
       reset.style.display = ov ? '' : 'none';
+
+      // 이번 달만 수정할 때는 할부 설정(기본값)을 잠그다
+      var lock = ed.scope === 'month';
+      ['fInstall', 'fInstNo', 'fInstTotal'].forEach(function (id) {
+        $(id).disabled = lock;
+      });
+      $('instField').style.opacity = lock ? '.55' : '';
     }
 
     function closeEditor() {
@@ -1406,6 +1418,7 @@
           base.category = '할부';
         } else {
           delete base.installment;
+          if (base.category === '할부') base.category = '기타';
         }
         // 기본값을 바꾸면 이번 달 override는 정리
         if (state.overrides[key]) {
@@ -1651,8 +1664,11 @@
         if (!e.target || e.target.id !== 'fStartBal') return;
         var key = currentKey();
         var d = e.target.value.replace(/[^\d]/g, '');
+        var val = Number(d) || 0;
+        var prev = Number((state.startBal || {})[key]) || 0;
+        if (val === prev) return;
         state.startBal = state.startBal || {};
-        if (d && Number(d) > 0) state.startBal[key] = Number(d);
+        if (val > 0) state.startBal[key] = val;
         else delete state.startBal[key];
         saveState();
         render();
