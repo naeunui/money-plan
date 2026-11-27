@@ -774,6 +774,7 @@
           <button class="btn ghost" id="importBtn" type="button">불러오기 (붙여넣기)</button>
         </div>
         <textarea class="data-area" id="dataArea" spellcheck="false" placeholder="여기에 붙여넣고 '불러오기'를 눌러 주세요"></textarea>
+        <button class="btn ghost" id="forceReloadBtn" type="button" style="width:100%;margin-top:8px">최신 버전 새로고침 (데이터 유지)</button>
       </div>
     </div>
   </div>
@@ -1540,7 +1541,7 @@
       var list = state.oneOff[key] || [];
       for (var j = 0; j < list.length; j++) {
         if (list[j].id === id) {
-          return { base: list[j], recurring: false, group: list[j].type === 'income' ? 'windfall' : 'monthly' };
+          return { base: list[j], recurring: false, group: list[j].group || (list[j].type === 'income' ? 'windfall' : 'monthly') };
         }
       }
       return null;
@@ -2504,6 +2505,9 @@
       // 데이터 내보내기·불러오기
       $('exportBtn').addEventListener('click', exportData);
       $('importBtn').addEventListener('click', importData);
+      $('forceReloadBtn').addEventListener('click', function () {
+        location.replace(location.pathname + '?v=' + Date.now());
+      });
 
       el.flowRoot.addEventListener('input', function (e) {
         if (!e.target || e.target.id !== 'fStartBal') return;
