@@ -116,9 +116,9 @@
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { -webkit-text-size-adjust: 100%; }
+    html { -webkit-text-size-adjust: 100%; width: 100%; overflow-x: hidden; }
     body {
-      margin: 0;
+      margin: 0; width: 100%; overflow-x: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Helvetica Neue", sans-serif;
       background: var(--bg);
       color: var(--text);
@@ -127,7 +127,10 @@
       transition: background .2s ease, color .2s ease;
     }
     body.locked { overflow: hidden; }
-    .wrap { max-width: 520px; margin: 0 auto; }
+    .wrap { width: 100%; margin: 0 auto; }
+    @media (min-width: 900px) {
+      .wrap { max-width: 640px; }
+    }
     svg { display: block; }
 
     /* ---------- 상단 ---------- */
