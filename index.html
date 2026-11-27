@@ -2570,7 +2570,9 @@
         if (!ed) return;
         if (ed.mode === 'add') {
           var rec = $('fRecurring').checked;
-          var gname = ed.type === 'income' ? (rec ? '들어올 돈' : '예상외 수입') : (rec ? '고정지출' : '이번달 지출');
+          var gname = ed.type === 'income'
+            ? (ed.group === 'income' || rec ? '들어올 돈' : '예상외 수입')
+            : (rec ? '고정지출' : '이번달 지출');
           $('edTitle').textContent = gname + ' 추가';
         }
         updateRepeatHint();
