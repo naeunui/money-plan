@@ -317,6 +317,7 @@
     }
     .i-amt.in { color: var(--in); }
     .i-amt.out { color: var(--out); }
+    .i-amt.deferred, .tl-amt.deferred { color: var(--muted); }
     .i-sub {
       display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
       margin-top: 4px;
@@ -1331,8 +1332,15 @@
       return groups;
     }
 
+    function isDeferredItem(it) {
+      return !!(it && it.type === 'expense' && !it.recurring && it.category === '신용카드');
+    }
+
     function sumOf(list) {
-      return list.reduce(function (s, it) { return s + (Number(it.amount) || 0); }, 0);
+      return list.reduce(function (s, it) {
+        if (isDeferredItem(it)) return s;
+        return s + (Number(it.amount) || 0);
+      }, 0);
     }
 
     /* =========================================================
@@ -1525,6 +1533,8 @@
       var nameHtml = locked ? '<span class="lock-name">' + icon('lock', 12) + '비공개</span>' : (esc(it.name) + catBadge);
       var metaHtml = locked ? '눌러서 확인' : esc(itemMeta(it));
       var privEditBtn = (isPriv && !locked) ? '<button class="priv-edit" type="button" data-priv-edit="1" aria-label="수정">' + privEditSvg + '</button>' : '';
+      var deferred = isDeferredItem(it);
+      var amtHtml = '<div class="i-amt ' + (deferred ? 'deferred' : it.type) + '">' + (deferred ? '→ ' : '') + signedWon(it.amount, it.type) + '</div>';
       return '<div class="swipe-wrap">' +
         '<div class="item' + (paid ? ' paid' : '') + '" data-id="' + esc(it.id) + '" data-group="' + group + '"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
           '<div class="i-top">' +
@@ -1534,7 +1544,7 @@
             '<span class="i-grip" data-handle="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
           '</div>' +
           '<div class="i-sub">' +
-            '<div class="i-amt ' + it.type + '">' + signedWon(it.amount, it.type) + '</div>' +
+            amtHtml +
             '<div class="i-meta">' + metaHtml + '</div>' +
           '</div>' +
         '</div>' +
@@ -1629,8 +1639,11 @@
 
       all.forEach(function (row) {
         var it = row.it;
-        bal += it.type === 'income' ? it.amount : -it.amount;
-        if (bal < minBal) { minBal = bal; minDay = it.day; }
+        var deferred = isDeferredItem(it);
+        if (!deferred) {
+          bal += it.type === 'income' ? it.amount : -it.amount;
+          if (bal < minBal) { minBal = bal; minDay = it.day; }
+        }
 
         var d = it.day || 99;
         var isNewDay = prevDay !== null && d !== prevDay;
@@ -1647,7 +1660,7 @@
           '<div class="tl-body">' +
             '<div class="tl-line">' +
               '<span class="tl-name">' + (locked ? '<span class="lock-name">' + icon('lock', 12) + '비공개</span>' : esc(it.name)) + '</span>' +
-              '<span class="tl-amt ' + it.type + '">' + signedWon(it.amount, it.type) + '</span>' +
+              '<span class="tl-amt ' + (deferred ? 'deferred' : it.type) + '">' + (deferred ? '→ ' : '') + signedWon(it.amount, it.type) + '</span>' +
             '</div>' +
             '<div class="tl-sub">' +
               '<span class="grp">' + (locked ? '눌러서 확인' : esc(GROUPS[row.gk].title + (it.inst ? ' · ' + (it.inst.totalNo ? it.inst.no + '/' + it.inst.totalNo + '회차' : it.inst.no + '회차') : '') + (it.overridden ? ' · 이번 달만' : ''))) + '</span>' +
