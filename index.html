@@ -233,7 +233,7 @@
     }
     .i-grip {
       width: 18px; height: 20px; flex: none; display: grid; place-items: center;
-      color: var(--muted); opacity: .55; touch-action: none; cursor: grab;
+      color: var(--muted); opacity: .68; touch-action: none; cursor: grab;
     }
     .i-grip svg { width: 12px; height: 16px; }
     .i-amt {
@@ -460,7 +460,7 @@
     </div>
 
     <section class="summary">
-      <div class="sum-label">이번 달 남는 돈</div>
+      <div class="sum-label">이 달 남는 돈</div>
       <div class="sum-value" id="netBalance">0원</div>
       <div class="sum-sub" id="dailyBudget">하루에 얼마나 쓸 수 있는지 계산해요</div>
       <div class="sum-grid">
@@ -1172,7 +1172,7 @@
         $('fInstTotal').value = '';
         $('repeatField').style.display = '';
         $('scopeField').style.display = 'none';
-        ed.initialCategory = null;
+        ed.initialCategory = '';
         updateRepeatHint();
       } else {
         var it = entry.base;
@@ -1697,6 +1697,11 @@
 
       $('fRecurring').addEventListener('change', function () {
         if (!ed) return;
+        if (ed.mode === 'add') {
+          var rec = $('fRecurring').checked;
+          var gname = ed.type === 'income' ? (rec ? '들어올 돈' : '예상외 수입') : (rec ? '고정지출' : '이번달 지출');
+          $('edTitle').textContent = gname + ' 추가';
+        }
         updateRepeatHint();
         updateCategoryOptions();
         updateInstallmentUI();
