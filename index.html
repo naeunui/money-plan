@@ -32,7 +32,7 @@
       --warn-soft: #FBEAE7;
       --sum-bg: #F8DFE6;
       --sum-fg: #2A1A20;
-      --sum-muted: #8B6470;
+      --sum-muted: #7A5A64;
       --sum-line: #EFC9D4;
       --sum-in: #A62F55;
       --sum-out: #4B3A40;
@@ -266,6 +266,20 @@
       margin-top: 12px; background: var(--warn-soft); color: var(--warn);
       border-radius: 12px; padding: 10px 12px; font-size: 13px; font-weight: 700; line-height: 1.45;
     }
+    .start-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line);
+    }
+    .start-row label { font-size: 13px; font-weight: 700; color: var(--muted); }
+    .start-input { position: relative; width: 132px; }
+    .start-input input {
+      width: 100%; padding: 9px 30px 9px 11px; text-align: right;
+      border: 1px solid var(--line-strong); border-radius: 10px;
+      background: var(--card-2); color: var(--text);
+      font-family: inherit; font-size: 15px; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .start-input span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); pointer-events: none; }
     .tl { margin-top: 14px; }
     .tl-row {
       display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line);
@@ -696,6 +710,7 @@
         overrides: {},
         paid: {},
         order: { global: { income: [], fixed: [] }, months: {} },
+        startBal: {},
         theme: 'pink',
         view: 'cards'
       };
@@ -763,6 +778,7 @@
       }
       if (raw.paid && typeof raw.paid === 'object') s.paid = raw.paid;
       if (raw.overrides && typeof raw.overrides === 'object') s.overrides = raw.overrides;
+      if (raw.startBal && typeof raw.startBal === 'object') s.startBal = raw.startBal;
 
       s.order = { global: { income: [], fixed: [] }, months: {} };
       if (raw.order && typeof raw.order === 'object') {
@@ -1017,8 +1033,9 @@
       });
 
       var paidMap = state.paid[key] || {};
-      var bal = 0;
-      var minBal = 0;
+      var startBal = Number((state.startBal || {})[key]) || 0;
+      var bal = startBal;
+      var minBal = startBal;
       var minDay = null;
       var rows = '';
       var prevDay = null;
@@ -1052,7 +1069,8 @@
       var alertHTML = '';
       if (minBal < 0) {
         alertHTML = '<div class="alert">' + (minDay ? minDay + '일 무렵' : '월 중') +
-          ' 잔액이 ' + won(Math.abs(minBal)) + ' 모자라요. 지출 날짜를 뒤로 미루거나 금액을 조정해 보세요.</div>';
+          ' 잔액이 ' + won(Math.abs(minBal)) + ' 모자라요.' +
+          (startBal === 0 ? ' 월초 잔액을 넣으면 실제 흐름을 더 정확히 볼 수 있어요.' : ' 지출 날짜를 뒤로 미루거나 금액을 조정해 보세요.') + '</div>';
       } else if (all.length) {
         alertHTML = '<div class="alert" style="background:var(--accent-soft);color:var(--accent-ink)">' +
           '이 달은 잔액이 마이너스로 내려가지 않아요.</div>';
@@ -1062,6 +1080,10 @@
         '<div class="flow-stats">' +
           '<div class="flow-stat"><div class="k">월말 잔액</div><div class="v' + (finalBal < 0 ? ' neg' : '') + '">' + (finalBal < 0 ? '-' : '') + won(Math.abs(finalBal)) + '</div></div>' +
           '<div class="flow-stat"><div class="k">가장 낮은 잔액</div><div class="v' + (minBal < 0 ? ' neg' : '') + '">' + (minBal < 0 ? '-' : '') + won(Math.abs(minBal)) + (minDay ? ' <span style="font-size:12px;font-weight:600;color:var(--muted)">(' + minDay + '일)</span>' : '') + '</div></div>' +
+        '</div>' +
+        '<div class="start-row">' +
+          '<label for="fStartBal">월초 잔액</label>' +
+          '<div class="start-input"><input id="fStartBal" type="text" inputmode="numeric" autocomplete="off" value="' + (startBal ? num(startBal) : '') + '" placeholder="0" /><span>원</span></div>' +
         '</div>' +
         alertHTML +
         '</div>';
@@ -1617,6 +1639,23 @@
       el.flowRoot.addEventListener('click', function (e) {
         var row = e.target.closest('.tl-row');
         if (row) openEditor({ mode: 'edit', id: row.dataset.id, group: row.dataset.group });
+      });
+
+      el.flowRoot.addEventListener('input', function (e) {
+        if (!e.target || e.target.id !== 'fStartBal') return;
+        var d = e.target.value.replace(/[^\d]/g, '');
+        e.target.value = d ? nf.format(Number(d.slice(0, 12))) : '';
+      });
+
+      el.flowRoot.addEventListener('change', function (e) {
+        if (!e.target || e.target.id !== 'fStartBal') return;
+        var key = currentKey();
+        var d = e.target.value.replace(/[^\d]/g, '');
+        state.startBal = state.startBal || {};
+        if (d && Number(d) > 0) state.startBal[key] = Number(d);
+        else delete state.startBal[key];
+        saveState();
+        render();
       });
 
       // 시트
