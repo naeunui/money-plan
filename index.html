@@ -302,6 +302,15 @@
       border-radius: 8px; padding: 4px 8px; cursor: pointer;
     }
     .empty button svg { width: 11px; height: 11px; }
+    .more-btn {
+      width: 100%; margin-top: 6px; padding: 7px 8px;
+      border: 1px dashed var(--line-strong); border-radius: 10px;
+      background: transparent; color: var(--muted);
+      font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .more-btn:active { background: var(--card-2); }
+    .lock-name { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
+    .lock-name svg { width: 12px; height: 12px; flex: none; }
 
     .foot-hint { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.5; margin: 16px 0 0; }
 
@@ -720,6 +729,14 @@
         </div>
       </div>
 
+      <label class="switch-row">
+        <span class="sw-text">
+          <b>비공개</b>
+          <small>첫 화면엔 금액만 보이고 이름은 잠겨요</small>
+        </span>
+        <input type="checkbox" class="switch" id="fPrivate" />
+      </label>
+
       <div id="scopeField">
         <div class="sub-label">수정 범위</div>
         <div class="seg" id="scopeSeg">
@@ -838,6 +855,14 @@
         <input id="pMemo" type="text" autocomplete="off" placeholder="예: 12월 세일 때" />
       </div>
 
+      <label class="switch-row">
+        <span class="sw-text">
+          <b>비공개</b>
+          <small>첫 화면엔 금액만 보이고 이름은 잠겨요</small>
+        </span>
+        <input type="checkbox" class="switch" id="pPrivate" />
+      </label>
+
       <div id="planScopeField">
         <div class="sub-label">어느 목록에 둘까요</div>
         <div class="seg" id="planScopeSeg">
@@ -902,6 +927,7 @@
       sparkle: '<path d="M12 3.5l1.7 4.9 4.8 1.6-4.8 1.6L12 16.5l-1.7-4.9L5.5 10l4.8-1.6z"/><path d="M18.5 15.5l.7 1.9 1.8.6-1.8.6-.7 1.9-.7-1.9-1.8-.6 1.8-.6z"/>',
       repeat:  '<path d="M4.5 10.5h11"/><path d="M12.5 7.5l3 3-3 3"/><path d="M19.5 13.5h-11"/><path d="M11.5 16.5l-3-3 3-3"/>',
       receipt: '<path d="M6 3.5h12v17l-2.4-1.6-2.4 1.6-2.4-1.6L8.4 20.5 6 18.9z"/><path d="M9 8.5h6M9 12h6"/>',
+      lock:    '<rect x="5" y="11" width="14" height="9" rx="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
       grip:    '<circle cx="9" cy="5.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="5.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="18.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="18.5" r="1.4" fill="currentColor" stroke="none"/>'
     };
 
@@ -984,7 +1010,8 @@
         id: raw.id ? String(raw.id) : uid(),
         name: name.slice(0, 80),
         amount: Math.max(0, Math.round(Number(raw.amount) || 0)),
-        memo: String(raw.memo == null ? '' : raw.memo).slice(0, 200)
+        memo: String(raw.memo == null ? '' : raw.memo).slice(0, 200),
+        isPrivate: !!raw.isPrivate
       };
     }
 
@@ -1013,7 +1040,8 @@
         name: String(raw.name || '이름 없음'),
         amount: amount,
         day: day,
-        category: normCategory(type, raw.category)
+        category: normCategory(type, raw.category),
+        isPrivate: !!raw.isPrivate
       };
       if (raw.startMonth && /^\d{4}-\d{2}$/.test(String(raw.startMonth))) {
         item.startMonth = String(raw.startMonth);
@@ -1160,6 +1188,7 @@
           amount: o && o.amount != null ? Number(o.amount) : item.amount,
           day: o && o.day !== undefined ? o.day : item.day,
           category: o && o.category ? o.category : item.category,
+          isPrivate: o && o.isPrivate !== undefined ? !!o.isPrivate : !!item.isPrivate,
           overridden: !!o,
           inst: inst
         });
@@ -1176,6 +1205,7 @@
           amount: item.amount,
           day: item.day,
           category: item.category,
+          isPrivate: !!item.isPrivate,
           overridden: false,
           inst: null
         });
@@ -1328,6 +1358,9 @@
       }
     }
 
+    var expandedGroups = {};
+    var revealedIds = {};
+
     function cardHTML(group, list) {
       var meta = GROUPS[group];
       var total = sumOf(list);
@@ -1336,7 +1369,13 @@
 
       var body;
       if (list.length) {
-        body = list.map(function (it) { return itemHTML(it, group); }).join('');
+        var isExp = !!expandedGroups[group];
+        var shown = (!isExp && list.length > 4) ? list.slice(0, 4) : list;
+        body = shown.map(function (it) { return itemHTML(it, group); }).join('');
+        if (list.length > 4) {
+          body += '<button class="more-btn" type="button" data-more="' + group + '">' +
+            (isExp ? '접기' : '+ ' + (list.length - 4) + '개 더보기') + '</button>';
+        }
       } else {
         body = '<div class="empty">아직 없어요' +
           '<button type="button" data-add="' + group + '">' + icon('plus') + '추가하기</button></div>';
@@ -1363,14 +1402,17 @@
 
     function itemHTML(it, group) {
       var paid = !!(state.paid[currentKey()] || {})[it.id];
-      return '<div class="item' + (paid ? ' paid' : '') + '" data-id="' + esc(it.id) + '" data-group="' + group + '" role="button" tabindex="0">' +
+      var locked = !!(it.isPrivate && !revealedIds[it.id]);
+      var nameHtml = locked ? '<span class="lock-name">' + icon('lock', 12) + '비공개</span>' : esc(it.name);
+      var metaHtml = locked ? '눌러서 확인' : esc(itemMeta(it));
+      return '<div class="item' + (paid ? ' paid' : '') + '" data-id="' + esc(it.id) + '" data-group="' + group + '"' + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
         '<div class="i-top">' +
           '<button class="chk' + (paid ? ' on' : '') + '" type="button" data-check="' + esc(it.id) + '" aria-label="' + (paid ? '완료 취소' : '완료 표시') + '" aria-pressed="' + (paid ? 'true' : 'false') + '">' + icon('check') + '</button>' +
-          '<span class="i-name">' + esc(it.name) + '</span>' +
+          '<span class="i-name">' + nameHtml + '</span>' +
           '<span class="i-grip" data-handle="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
         '</div>' +
         '<div class="i-amt ' + it.type + '">' + signedWon(it.amount, it.type) + '</div>' +
-        '<div class="i-meta">' + esc(itemMeta(it)) + '</div>' +
+        '<div class="i-meta">' + metaHtml + '</div>' +
       '</div>';
     }
 
@@ -1384,14 +1426,17 @@
     }
 
     function planItemHTML(it, section, i) {
-      return '<div class="pitem" data-pid="' + esc(it.id) + '" data-sec="' + section + '" role="button" tabindex="0">' +
+      var locked = !!(it.isPrivate && !revealedIds[it.id]);
+      var nameHtml = locked ? '<span class="lock-name">' + icon('lock', 12) + '비공개</span>' : esc(it.name);
+      var memoHtml = locked ? '<div class="p-memo">눌러서 확인</div>' : (it.memo ? '<div class="p-memo">' + esc(it.memo) + '</div>' : '');
+      return '<div class="pitem" data-pid="' + esc(it.id) + '" data-sec="' + section + '"' + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
         '<span class="p-rank">' + (i + 1) + '.</span>' +
         '<div class="p-body">' +
           '<div class="p-line">' +
-            '<span class="p-name">' + esc(it.name) + '</span>' +
+            '<span class="p-name">' + nameHtml + '</span>' +
             '<span class="p-amt">' + won(it.amount) + '</span>' +
           '</div>' +
-          (it.memo ? '<div class="p-memo">' + esc(it.memo) + '</div>' : '') +
+          memoHtml +
         '</div>' +
         '<button class="p-move" type="button" data-pmove="' + esc(it.id) + '" aria-label="' +
           (section === 'wish' ? '이번달 구매예정으로 옮기기' : '위시리스트로 옮기기') + '">' + icon('swap') + '</button>' +
@@ -1403,8 +1448,12 @@
       var meta = PLAN[section];
       var list = planList(section, key);
       var total = planTotal(list);
+      var mKey = 'plan_' + section;
+      var isExp = !!expandedGroups[mKey];
+      var shown = (!isExp && list.length > 4) ? list.slice(0, 4) : list;
       var body = list.length
-        ? list.map(function (it, i) { return planItemHTML(it, section, i); }).join('')
+        ? shown.map(function (it, i) { return planItemHTML(it, section, i); }).join('') +
+          (list.length > 4 ? '<button class="more-btn" type="button" data-more="' + mKey + '">' + (isExp ? '접기' : '+ ' + (list.length - 4) + '개 더보기') + '</button>' : '')
         : '<div class="plan-empty">' +
             (section === 'month' ? '이 달에 살 것을 적어 두세요' : '나중에 살 것을 모아 두세요') + '</div>';
 
@@ -1457,16 +1506,17 @@
         var paid = !!paidMap[it.id];
         var wd = weekdayOf(viewYear, viewMonth, it.day);
 
-        rows += '<div class="tl-row' + (paid ? ' paid' : '') + (isNewDay ? ' day-start' : '') + '" data-id="' + esc(it.id) + '" data-group="' + row.gk + '" role="button" tabindex="0">' +
+        var locked = !!(it.isPrivate && !revealedIds[it.id]);
+        rows += '<div class="tl-row' + (paid ? ' paid' : '') + (isNewDay ? ' day-start' : '') + '" data-id="' + esc(it.id) + '" data-group="' + row.gk + '"' + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
           '<span class="tl-mark ' + it.type + '" aria-hidden="true"></span>' +
           '<div class="tl-day"><div class="tl-num">' + (it.day ? it.day + '일' : '–') + '</div><div class="tl-unit">' + (it.day ? (wd ? '(' + wd + ')' : '') : '미정') + '</div></div>' +
           '<div class="tl-body">' +
             '<div class="tl-line">' +
-              '<span class="tl-name">' + esc(it.name) + '</span>' +
+              '<span class="tl-name">' + (locked ? '<span class="lock-name">' + icon('lock', 12) + '비공개</span>' : esc(it.name)) + '</span>' +
               '<span class="tl-amt ' + it.type + '">' + signedWon(it.amount, it.type) + '</span>' +
             '</div>' +
             '<div class="tl-sub">' +
-              '<span class="grp">' + esc(GROUPS[row.gk].title + (it.inst ? ' · ' + (it.inst.totalNo ? it.inst.no + '/' + it.inst.totalNo + '회차' : it.inst.no + '회차') : '') + (it.overridden ? ' · 이번 달만' : '')) + '</span>' +
+              '<span class="grp">' + (locked ? '눌러서 확인' : esc(GROUPS[row.gk].title + (it.inst ? ' · ' + (it.inst.totalNo ? it.inst.no + '/' + it.inst.totalNo + '회차' : it.inst.no + '회차') : '') + (it.overridden ? ' · 이번 달만' : ''))) + '</span>' +
               '<span class="tl-bal' + (bal < 0 ? ' neg' : '') + '">잔액 ' + (bal < 0 ? '-' : '') + won(Math.abs(bal)) + '</span>' +
             '</div>' +
           '</div>' +
@@ -1578,6 +1628,7 @@
         $('fInstall').checked = false;
         $('fInstNo').value = '';
         $('fInstTotal').value = '';
+        $('fPrivate').checked = false;
         $('repeatField').style.display = '';
         $('scopeField').style.display = 'none';
         ed.initialCategory = '';
@@ -1593,6 +1644,7 @@
         fDay.value = (ov && ov.day !== undefined ? ov.day : it.day) || '';
         $('repeatField').style.display = 'none';
         $('fRecurring').checked = entry.recurring;
+        $('fPrivate').checked = !!(ov && ov.isPrivate !== undefined ? ov.isPrivate : it.isPrivate);
         $('scopeField').style.display = entry.recurring ? '' : 'none';
         ed.initialCategory = ov && ov.category ? ov.category : it.category;
 
@@ -1751,7 +1803,8 @@
           name: name,
           amount: amount,
           day: day,
-          category: category
+          category: category,
+          isPrivate: $('fPrivate').checked
         };
 
         if (ed.type === 'expense' && recurring && $('fInstall').checked) {
@@ -1796,7 +1849,7 @@
       if (entry.recurring && ed.scope === 'month') {
         state.overrides[key] = state.overrides[key] || {};
         state.overrides[key][base.id] = {
-          name: name, amount: amount, day: day, category: category
+          name: name, amount: amount, day: day, category: category, isPrivate: $('fPrivate').checked
         };
         saveState();
         closeEditor();
@@ -1809,6 +1862,7 @@
       base.amount = amount;
       base.day = day;
       base.category = category;
+      base.isPrivate = $('fPrivate').checked;
 
       if (entry.recurring) {
         if (base.type === 'expense' && $('fInstall').checked) {
@@ -2112,6 +2166,7 @@
       $('pName').value = found ? found.item.name : '';
       $('pAmount').value = found && found.item.amount ? num(found.item.amount) : '';
       $('pMemo').value = found ? found.item.memo : '';
+      $('pPrivate').checked = found ? !!found.item.isPrivate : false;
       $('planDelete').style.display = ped.mode === 'edit' ? '' : 'none';
       $('planActions').className = 'sheet-actions' + (ped.mode === 'edit' ? ' with-delete' : '');
       updatePlanScopeUI();
@@ -2143,17 +2198,19 @@
       var name = $('pName').value.trim();
       var amount = readAmount('pAmount');
       var memo = $('pMemo').value.trim();
+      var isPriv = $('pPrivate').checked;
       if (!name) { toast('이름을 입력해 주세요'); try { $('pName').focus(); } catch (e) {} return; }
       var section = ped.section;
 
       if (ped.mode === 'add') {
-        planAppendItem(section, { id: uid(), name: name, amount: amount, memo: memo });
+        planAppendItem(section, { id: uid(), name: name, amount: amount, memo: memo, isPrivate: isPriv });
       } else {
         var found = planItemById(ped.id);
         if (!found) { closePlanEditor(); return; }
         found.item.name = name;
         found.item.amount = amount;
         found.item.memo = memo;
+        found.item.isPrivate = isPriv;
         if (found.section !== section) movePlanItem(ped.id, section, true);
       }
       saveState();
@@ -2431,6 +2488,12 @@
 
       // 카드: 추가 / 체크 / 항목 열기
       el.cardGrid.addEventListener('click', function (e) {
+        var more = e.target.closest('[data-more]');
+        if (more) {
+          expandedGroups[more.dataset.more] = !expandedGroups[more.dataset.more];
+          render();
+          return;
+        }
         var add = e.target.closest('[data-add]');
         if (add) {
           openEditor({ mode: 'add', group: add.dataset.add });
@@ -2444,7 +2507,14 @@
         }
         if (e.target.closest('[data-handle]')) return;
         var item = e.target.closest('.item');
-        if (item) openEditor({ mode: 'edit', id: item.dataset.id, group: item.dataset.group });
+        if (item) {
+          if (item.dataset.locked === '1') {
+            revealedIds[item.dataset.id] = true;
+            render();
+            return;
+          }
+          openEditor({ mode: 'edit', id: item.dataset.id, group: item.dataset.group });
+        }
       });
 
       el.cardGrid.addEventListener('keydown', function (e) {
@@ -2452,16 +2522,34 @@
         var item = e.target.closest('.item');
         if (!item || e.target.closest('[data-check]')) return;
         e.preventDefault();
+        if (item.dataset.locked === '1') {
+          revealedIds[item.dataset.id] = true;
+          render();
+          return;
+        }
         openEditor({ mode: 'edit', id: item.dataset.id, group: item.dataset.group });
       });
 
       el.flowRoot.addEventListener('click', function (e) {
         var row = e.target.closest('.tl-row');
-        if (row) openEditor({ mode: 'edit', id: row.dataset.id, group: row.dataset.group });
+        if (row) {
+          if (row.dataset.locked === '1') {
+            revealedIds[row.dataset.id] = true;
+            render();
+            return;
+          }
+          openEditor({ mode: 'edit', id: row.dataset.id, group: row.dataset.group });
+        }
       });
 
       // 구매예정 · 위시리스트
       el.planWrap.addEventListener('click', function (e) {
+        var more = e.target.closest('[data-more]');
+        if (more) {
+          expandedGroups[more.dataset.more] = !expandedGroups[more.dataset.more];
+          render();
+          return;
+        }
         var add = e.target.closest('[data-plan-add]');
         if (add) { openPlanEditor({ mode: 'add', section: add.dataset.planAdd }); return; }
         var mv = e.target.closest('[data-pmove]');
@@ -2472,7 +2560,14 @@
         }
         if (e.target.closest('[data-pgrip]')) return;
         var item = e.target.closest('.pitem');
-        if (item) openPlanEditor({ mode: 'edit', id: item.dataset.pid });
+        if (item) {
+          if (item.dataset.locked === '1') {
+            revealedIds[item.dataset.pid] = true;
+            render();
+            return;
+          }
+          openPlanEditor({ mode: 'edit', id: item.dataset.pid });
+        }
       });
 
       el.planWrap.addEventListener('keydown', function (e) {
