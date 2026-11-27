@@ -721,7 +721,7 @@
       if (type === 'income') return '수입';
       if (cat === '통신·구독') return '구독';
       if (cat === '교통·생활') return '교통';
-      if (cat === '이자' || cat === '원금' || cat === '할부' || cat === '저축·적금' || cat === '주거·관리' || cat === '통신' || cat === '구독' || cat === '교통' || cat === '기타') return cat;
+      if (CATS_FIXED.indexOf(cat) >= 0 || CATS_MONTHLY.indexOf(cat) >= 0) return cat;
       return '기타';
     }
 
