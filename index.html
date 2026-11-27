@@ -617,6 +617,7 @@
       <div class="sum-label">이 달 남는 돈</div>
       <div class="sum-value" id="netBalance">0원</div>
       <div class="sum-sub" id="dailyBudget">하루에 얼마나 쓸 수 있는지 계산해요</div>
+      <div class="sum-sub" id="carryLine" style="margin-top:-10px;margin-bottom:12px;font-weight:700;display:none"></div>
       <div class="sum-grid">
         <div>
           <div class="sum-k">총 수입</div>
@@ -1195,6 +1196,7 @@
       el.monthBadge = $('monthBadge');
       el.netBalance = $('netBalance');
       el.dailyBudget = $('dailyBudget');
+      el.carryLine = $('carryLine');
       el.totalIncome = $('totalIncome');
       el.totalExpense = $('totalExpense');
       el.cardGrid = $('cardGrid');
@@ -1208,6 +1210,47 @@
       el.themeName = $('themeName');
       el.themeColorMeta = $('themeColorMeta');
       el.brandMark = document.querySelector('.brand-mark');
+    }
+
+    function prevMonthKey(key) {
+      var p = parseKey(key);
+      var y = p.y, m = p.m - 1;
+      if (m < 0) { y -= 1; m = 11; }
+      return ymKey(y, m);
+    }
+
+    function getCarryAnchorKey() {
+      var todayKey = ymKey(now.getFullYear(), now.getMonth());
+      var anchor = todayKey;
+      var pools = [state.oneOff || {}, state.overrides || {}, state.startBal || {}];
+      pools.forEach(function (obj) {
+        Object.keys(obj).forEach(function (k) {
+          if (/^\d{4}-\d{2}$/.test(k) && k < anchor) anchor = k;
+        });
+      });
+      return anchor;
+    }
+
+    function getStartBalance(key, memo) {
+      memo = memo || {};
+      if (memo[key]) return memo[key];
+      var sbMap = state.startBal || {};
+      if (Object.prototype.hasOwnProperty.call(sbMap, key) && sbMap[key] !== '' && sbMap[key] !== null && sbMap[key] !== undefined) {
+        memo[key] = { value: Number(sbMap[key]) || 0, manual: true };
+        return memo[key];
+      }
+      var anchor = getCarryAnchorKey();
+      if (key <= anchor) {
+        memo[key] = { value: 0, manual: false };
+        return memo[key];
+      }
+      var pKey = prevMonthKey(key);
+      var prevStart = getStartBalance(pKey, memo).value;
+      var pg = buildGroups(pKey);
+      var prevNet = sumOf(pg.income) + sumOf(pg.windfall) - sumOf(pg.fixed) - sumOf(pg.monthly);
+      var carry = Math.max(0, prevStart + prevNet);
+      memo[key] = { value: carry, manual: false };
+      return memo[key];
     }
 
     function render() {
@@ -1227,15 +1270,23 @@
         : (diff > 0 ? diff + '개월 뒤' : Math.abs(diff) + '개월 전');
       el.monthBadge.textContent = badge;
 
+      var carryInfo = getStartBalance(key);
       var groups = buildGroups(key);
       var totalIn = sumOf(groups.income) + sumOf(groups.windfall);
       var totalOut = sumOf(groups.fixed) + sumOf(groups.monthly);
-      var net = totalIn - totalOut;
+      var net = carryInfo.value + totalIn - totalOut;
       var days = daysInMonth(viewYear, viewMonth);
 
       el.netBalance.textContent = (net < 0 ? '-' : '') + won(Math.abs(net));
       el.totalIncome.textContent = '+' + won(totalIn);
       el.totalExpense.textContent = '-' + won(totalOut);
+
+      if (carryInfo.value > 0 || carryInfo.manual) {
+        el.carryLine.style.display = 'block';
+        el.carryLine.textContent = (carryInfo.manual ? '월초 잔액(직접 입력) ' : '전달 이월 +') + won(carryInfo.value) + ' 포함';
+      } else {
+        el.carryLine.style.display = 'none';
+      }
 
       if (net >= 0) {
         var perDay = Math.floor(net / days);
@@ -1380,7 +1431,8 @@
       });
 
       var paidMap = state.paid[key] || {};
-      var startBal = Number((state.startBal || {})[key]) || 0;
+      var carryInfo = getStartBalance(key);
+      var startBal = carryInfo.value;
       var bal = startBal;
       var minBal = startBal;
       var minDay = null;
@@ -1431,7 +1483,7 @@
           '<div class="flow-stat"><div class="k">가장 낮은 잔액</div><div class="v' + (minBal < 0 ? ' neg' : '') + '">' + (minBal < 0 ? '-' : '') + won(Math.abs(minBal)) + (minDay ? ' <span style="font-size:12px;font-weight:600;color:var(--muted)">(' + minDay + '일)</span>' : '') + '</div></div>' +
         '</div>' +
         '<div class="start-row">' +
-          '<label for="fStartBal">월초 잔액</label>' +
+          '<label for="fStartBal">월초 잔액' + (!carryInfo.manual && startBal > 0 ? ' <span style="font-size:11px;font-weight:700;color:var(--accent-ink)">(자동 이월)</span>' : '') + '</label>' +
           '<div class="start-input"><input id="fStartBal" type="text" inputmode="numeric" autocomplete="off" value="' + (startBal ? num(startBal) : '') + '" placeholder="0" /><span>원</span></div>' +
         '</div>' +
         alertHTML +
