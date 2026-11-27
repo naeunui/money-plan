@@ -1014,6 +1014,12 @@
         day: day,
         category: normCategory(type, raw.category)
       };
+      if (raw.startMonth && /^\d{4}-\d{2}$/.test(String(raw.startMonth))) {
+        item.startMonth = String(raw.startMonth);
+      }
+      if (raw.group && ['income', 'windfall', 'fixed', 'monthly'].indexOf(raw.group) !== -1) {
+        item.group = raw.group;
+      }
       var inst = raw.installment;
       if (inst && inst.startMonth && /^\d{4}-\d{2}$/.test(String(inst.startMonth))) {
         var startNo = Math.max(1, Math.round(Number(inst.startNo) || 1));
@@ -1139,6 +1145,7 @@
       var ov = state.overrides[key] || {};
 
       state.recurring.forEach(function (item) {
+        if (item.startMonth && key < item.startMonth) return;
         var inst = installmentState(item, key);
         if (inst && inst.hidden) return;
         var o = ov[item.id];
@@ -1158,7 +1165,7 @@
       });
 
       (state.oneOff[key] || []).forEach(function (item) {
-        var group = item.type === 'income' ? 'windfall' : 'monthly';
+        var group = item.group || (item.type === 'income' ? 'windfall' : 'monthly');
         groups[group].push({
           id: item.id,
           base: item,
@@ -1624,10 +1631,13 @@
       var hint = $('repeatHint');
       if (!hint) return;
       var rec = $('fRecurring').checked;
+      var m = (viewMonth + 1) + '월';
       if (ed.type === 'income') {
-        hint.textContent = rec ? '매달 들어오는 돈이에요 (들어올 돈)' : '이번 달에만 들어오는 돈이에요 (예상외 수입)';
+        if (rec) hint.textContent = m + '부터 매달 들어오는 돈이에요 (들어올 돈)';
+        else if (ed.group === 'income') hint.textContent = m + ' 들어올 돈에만 들어가요';
+        else hint.textContent = m + '에만 들어오는 돈이에요 (예상외 수입)';
       } else {
-        hint.textContent = rec ? '매달 나가는 돈이에요 (고정지출)' : '이번 달에만 나가는 지출이에요 (이번달 지출)';
+        hint.textContent = rec ? m + '부터 매달 나가는 돈이에요 (고정지출)' : m + '에만 나가는 지출이에요 (이번달 지출)';
       }
     }
 
@@ -1757,13 +1767,15 @@
         }
 
         if (recurring) {
+          item.startMonth = key;
           state.recurring.push(item);
           var gk = ed.type === 'income' ? 'income' : 'fixed';
           state.order.global[gk] = (state.order.global[gk] || []).concat([item.id]);
         } else {
+          var mk = ed.type === 'income' ? (ed.group === 'income' ? 'income' : 'windfall') : 'monthly';
+          item.group = mk;
           state.oneOff[key] = state.oneOff[key] || [];
           state.oneOff[key].push(item);
-          var mk = ed.type === 'income' ? 'windfall' : 'monthly';
           state.order.months[key] = state.order.months[key] || {};
           state.order.months[key][mk] = (state.order.months[key][mk] || []).concat([item.id]);
         }
