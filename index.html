@@ -313,12 +313,41 @@
     }
     .i-grip svg { width: 13px; height: 17px; }
     .i-amt {
-      font-size: 15px; font-weight: 800; letter-spacing: -.4px; margin-top: 3px;
+      font-size: 15.5px; font-weight: 800; letter-spacing: -.4px; margin-top: 0;
       font-variant-numeric: tabular-nums; white-space: nowrap;
     }
     .i-amt.in { color: var(--in); }
     .i-amt.out { color: var(--out); }
-    .i-meta { font-size: 12px; color: var(--muted); line-height: 1.35; margin-top: 2px; word-break: keep-all; }
+    .i-sub {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
+      margin-top: 4px;
+    }
+    .i-meta {
+      font-size: 12px; color: var(--muted); line-height: 1.35; margin-top: 0;
+      text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .card[data-group="fixed"] .i-amt { font-size: 13.5px; }
+    .card[data-group="fixed"] .i-meta { font-size: 10.5px; }
+    .card.drop-over { border-color: var(--accent); background: var(--accent-soft); }
+    .swipe-wrap { position: relative; overflow: hidden; border-radius: 12px; }
+    .card[data-group="fixed"] .swipe-wrap { border-radius: 10px; }
+    .swipe-wrap > .item,
+    .swipe-wrap > .pitem {
+      position: relative; z-index: 2;
+      transition: transform .18s ease, background .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+    .swipe-wrap.swiping > .item,
+    .swipe-wrap.swiping > .pitem { transition: none; }
+    .swipe-wrap.swiped > .item,
+    .swipe-wrap.swiped > .pitem { transform: translate3d(-50px, 0, 0); }
+    .swipe-del {
+      position: absolute; top: 0; right: 0; bottom: 0; width: 52px; z-index: 1;
+      border: none; background: #E53935; color: #FFFFFF;
+      display: grid; place-items: center; cursor: pointer; padding: 0;
+    }
+    .swipe-del svg { width: 17px; height: 17px; }
+    .swipe-wrap.dragging-wrap { overflow: visible; z-index: 25; }
+    .swipe-wrap.dragging-wrap > .swipe-del { display: none; }
     .priv-edit {
       width: 22px; height: 22px; flex: none; border: none; border-radius: 6px;
       background: transparent; color: var(--muted); display: grid; place-items: center;
@@ -1449,6 +1478,7 @@
     }
 
     var privEditSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+    var trashSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
 
     function itemHTML(it, group) {
       var paid = !!(state.paid[currentKey()] || {})[it.id];
@@ -1458,17 +1488,20 @@
       var nameHtml = locked ? '<span class="lock-name">' + icon('lock', 12) + '비공개</span>' : (esc(it.name) + catBadge);
       var metaHtml = locked ? '눌러서 확인' : esc(itemMeta(it));
       var privEditBtn = (isPriv && !locked) ? '<button class="priv-edit" type="button" data-priv-edit="1" aria-label="수정">' + privEditSvg + '</button>' : '';
-      return '<div class="item' + (paid ? ' paid' : '') + '" data-id="' + esc(it.id) + '" data-group="' + group + '"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
-        '<div class="i-top">' +
-          '<button class="chk' + (paid ? ' on' : '') + '" type="button" data-check="' + esc(it.id) + '" aria-label="' + (paid ? '완료 취소' : '완료 표시') + '" aria-pressed="' + (paid ? 'true' : 'false') + '">' + icon('check') + '</button>' +
-          '<span class="i-name">' + nameHtml + '</span>' +
-          privEditBtn +
-          '<span class="i-grip" data-handle="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
+      return '<div class="swipe-wrap">' +
+        '<div class="item' + (paid ? ' paid' : '') + '" data-id="' + esc(it.id) + '" data-group="' + group + '"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
+          '<div class="i-top">' +
+            '<button class="chk' + (paid ? ' on' : '') + '" type="button" data-check="' + esc(it.id) + '" aria-label="' + (paid ? '완료 취소' : '완료 표시') + '" aria-pressed="' + (paid ? 'true' : 'false') + '">' + icon('check') + '</button>' +
+            '<span class="i-name">' + nameHtml + '</span>' +
+            privEditBtn +
+            '<span class="i-grip" data-handle="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
+          '</div>' +
+          '<div class="i-sub">' +
+            '<div class="i-amt ' + it.type + '">' + signedWon(it.amount, it.type) + '</div>' +
+            '<div class="i-meta">' + metaHtml + '</div>' +
+          '</div>' +
         '</div>' +
-        '<div class="i-sub">' +
-          '<div class="i-amt ' + it.type + '">' + signedWon(it.amount, it.type) + '</div>' +
-          '<div class="i-meta">' + metaHtml + '</div>' +
-        '</div>' +
+        '<button class="swipe-del" type="button" data-del="' + esc(it.id) + '" aria-label="삭제">' + trashSvg + '</button>' +
       '</div>';
     }
 
@@ -1487,19 +1520,22 @@
       var nameHtml = locked ? '<span class="lock-name">' + icon('lock', 12) + '비공개</span>' : esc(it.name);
       var memoHtml = locked ? '<div class="p-memo">눌러서 확인</div>' : (it.memo ? '<div class="p-memo">' + esc(it.memo) + '</div>' : '');
       var privEditBtn = (isPriv && !locked) ? '<button class="priv-edit" type="button" data-priv-edit="1" aria-label="수정">' + privEditSvg + '</button>' : '';
-      return '<div class="pitem" data-pid="' + esc(it.id) + '" data-sec="' + section + '"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
-        '<span class="p-rank">' + (i + 1) + '.</span>' +
-        '<div class="p-body">' +
-          '<div class="p-line">' +
-            '<span class="p-name">' + nameHtml + '</span>' +
-            '<span class="p-amt">' + won(it.amount) + '</span>' +
+      return '<div class="swipe-wrap">' +
+        '<div class="pitem" data-pid="' + esc(it.id) + '" data-sec="' + section + '"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
+          '<span class="p-rank">' + (i + 1) + '.</span>' +
+          '<div class="p-body">' +
+            '<div class="p-line">' +
+              '<span class="p-name">' + nameHtml + '</span>' +
+              '<span class="p-amt">' + won(it.amount) + '</span>' +
+            '</div>' +
+            memoHtml +
           '</div>' +
-          memoHtml +
+          privEditBtn +
+          '<button class="p-move" type="button" data-pmove="' + esc(it.id) + '" aria-label="' +
+            (section === 'wish' ? '이번달 구매예정으로 옮기기' : '위시리스트로 옮기기') + '">' + icon('swap') + '</button>' +
+          '<span class="p-grip" data-pgrip="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
         '</div>' +
-        privEditBtn +
-        '<button class="p-move" type="button" data-pmove="' + esc(it.id) + '" aria-label="' +
-          (section === 'wish' ? '이번달 구매예정으로 옮기기' : '위시리스트로 옮기기') + '">' + icon('swap') + '</button>' +
-        '<span class="p-grip" data-pgrip="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
+        '<button class="swipe-del" type="button" data-pdel="' + esc(it.id) + '" aria-label="삭제">' + trashSvg + '</button>' +
       '</div>';
     }
 
@@ -1988,6 +2024,25 @@
       toast('삭제했어요');
     }
 
+    function deleteItemById(id) {
+      var entry = findEntry(id);
+      if (!entry) return;
+      var key = currentKey();
+      if (entry.recurring) {
+        state.recurring = state.recurring.filter(function (x) { return x.id !== id; });
+      } else {
+        state.oneOff[key] = (state.oneOff[key] || []).filter(function (x) { return x.id !== id; });
+      }
+      removeFromOrder(id);
+      if (state.overrides[key]) delete state.overrides[key][id];
+      Object.keys(state.paid).forEach(function (k) {
+        if (state.paid[k] && state.paid[k][id]) delete state.paid[k][id];
+      });
+      saveState();
+      render();
+      toast('삭제했어요');
+    }
+
     function removeFromOrder(id) {
       ['income', 'fixed'].forEach(function (g) {
         state.order.global[g] = (state.order.global[g] || []).filter(function (x) { return x !== id; });
@@ -2007,7 +2062,7 @@
     var suppressClickUntil = 0;
 
     function afterElement(container, x, y, dragged) {
-      var els = Array.prototype.slice.call(container.querySelectorAll('.item'));
+      var els = Array.prototype.slice.call(container.querySelectorAll('.swipe-wrap'));
       var isGrid = container.dataset.list === 'fixed';
       if (isGrid) {
         for (var i = 0; i < els.length; i++) {
@@ -2042,17 +2097,21 @@
     }
 
     function startDrag(item, clientX, clientY, pointerId, captureEl) {
+      var wrap = item.closest('.swipe-wrap') || item;
+      wrap.classList.remove('swiped');
+      wrap.classList.add('dragging-wrap');
       drag = {
         item: item,
+        wrap: wrap,
         startX: clientX,
         startY: clientY,
         pointerId: pointerId,
         moved: false,
         group: item.dataset.group,
-        container: item.parentElement
+        container: wrap.parentElement
       };
       item.classList.add('dragging');
-      item.style.transform = 'scale(1.03)';
+      wrap.style.transform = 'scale(1.03)';
       if (captureEl && captureEl.setPointerCapture) {
         try { captureEl.setPointerCapture(pointerId); } catch (e) {}
       }
@@ -2061,15 +2120,15 @@
     function moveDrag(clientX, clientY) {
       if (!drag) return;
       if (Math.hypot(clientX - drag.startX, clientY - drag.startY) > 3) drag.moved = true;
-      var after = afterElement(drag.container, clientX, clientY, drag.item);
+      var after = afterElement(drag.container, clientX, clientY, drag.wrap);
       var more = drag.container.querySelector('.more-btn');
       if (after === null) {
-        if (more) drag.container.insertBefore(drag.item, more);
-        else drag.container.appendChild(drag.item);
-      } else if (after !== drag.item) {
-        drag.container.insertBefore(drag.item, after);
+        if (more) drag.container.insertBefore(drag.wrap, more);
+        else drag.container.appendChild(drag.wrap);
+      } else if (after !== drag.wrap) {
+        drag.container.insertBefore(drag.wrap, after);
       }
-      floatFollow(drag.item, clientX, clientY, drag.group === 'fixed');
+      floatFollow(drag.wrap, clientX, clientY, drag.group === 'fixed');
     }
 
     function endDrag() {
@@ -2077,7 +2136,8 @@
       var d = drag;
       drag = null;
       d.item.classList.remove('dragging');
-      d.item.style.transform = '';
+      d.wrap.classList.remove('dragging-wrap');
+      d.wrap.style.transform = '';
       suppressClickUntil = Date.now() + 320;
       if (!d.moved) return;
       var ids = Array.prototype.slice.call(d.container.querySelectorAll('.item')).map(function (el) {
@@ -2098,32 +2158,46 @@
       render();
     }
 
+    function closeAllSwipes(except) {
+      Array.prototype.forEach.call(document.querySelectorAll('.swipe-wrap.swiped'), function (w) {
+        if (w !== except) w.classList.remove('swiped');
+      });
+    }
+
     function bindPointer() {
       var hold = null;
+      var sw = null;
       var clearHold = function () {
         if (hold) { clearTimeout(hold.timer); hold = null; }
       };
 
       el.cardGrid.addEventListener('pointerdown', function (e) {
+        if (e.target.closest('[data-del]')) return;
         var handle = e.target.closest('[data-handle]');
         if (handle) {
           var hItem = handle.closest('.item');
           if (!hItem) return;
           e.preventDefault();
+          closeAllSwipes();
           startDrag(hItem, e.clientX, e.clientY, e.pointerId, handle);
           return;
         }
         if (e.target.closest('[data-check]') || e.target.closest('[data-priv-edit]')) return;
         var item = e.target.closest('.item');
         if (!item) return;
+        var wrap = item.closest('.swipe-wrap');
+        closeAllSwipes(wrap);
         clearHold();
         var pid = e.pointerId, sx = e.clientX, sy = e.clientY;
+        var baseDx = (wrap && wrap.classList.contains('swiped')) ? -50 : 0;
+        sw = { item: item, wrap: wrap, pid: pid, sx: sx, sy: sy, baseDx: baseDx, dx: baseDx, active: false };
         hold = {
           pointerId: pid,
           x: sx,
           y: sy,
           timer: setTimeout(function () {
             hold = null;
+            sw = null;
             startDrag(item, sx, sy, pid, item);
           }, 230)
         };
@@ -2133,18 +2207,50 @@
         if (hold && e.pointerId === hold.pointerId) {
           if (Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 8) clearHold();
         }
+        if (sw && e.pointerId === sw.pid && !drag) {
+          var mdx = e.clientX - sw.sx;
+          var mdy = e.clientY - sw.sy;
+          if (!sw.active && Math.abs(mdx) > 8 && Math.abs(mdx) > Math.abs(mdy) * 1.2) {
+            sw.active = true;
+            clearHold();
+            if (sw.wrap) sw.wrap.classList.add('swiping');
+          }
+          if (sw.active) {
+            if (e.cancelable) e.preventDefault();
+            var nx = Math.max(-56, Math.min(0, sw.baseDx + mdx));
+            sw.dx = nx;
+            sw.item.style.transform = 'translate3d(' + nx.toFixed(1) + 'px,0,0)';
+          }
+        }
         if (!drag || e.pointerId !== drag.pointerId) return;
         if (e.cancelable) e.preventDefault();
         moveDrag(e.clientX, e.clientY);
       }, { passive: false });
 
-      document.addEventListener('pointerup', function (e) {
+      var finishSwipe = function (e) {
         if (hold && e.pointerId === hold.pointerId) clearHold();
+        if (sw && e.pointerId === sw.pid) {
+          var s = sw;
+          sw = null;
+          if (s.wrap) s.wrap.classList.remove('swiping');
+          s.item.style.transform = '';
+          if (s.active) {
+            if (s.wrap) s.wrap.classList.toggle('swiped', s.dx < -24);
+            suppressClickUntil = Date.now() + 260;
+          } else if (s.baseDx < 0 && s.wrap) {
+            s.wrap.classList.remove('swiped');
+            suppressClickUntil = Date.now() + 260;
+          }
+        }
+      };
+
+      document.addEventListener('pointerup', function (e) {
+        finishSwipe(e);
         if (!drag || e.pointerId !== drag.pointerId) return;
         endDrag();
       });
       document.addEventListener('pointercancel', function (e) {
-        if (hold && e.pointerId === hold.pointerId) clearHold();
+        finishSwipe(e);
         if (!drag || e.pointerId !== drag.pointerId) return;
         endDrag();
       });
@@ -2364,7 +2470,7 @@
     }
 
     function planAfterElement(list, y, dragged) {
-      var els = Array.prototype.slice.call(list.querySelectorAll('.pitem')).filter(function (x) { return x !== dragged; });
+      var els = Array.prototype.slice.call(list.querySelectorAll('.swipe-wrap')).filter(function (x) { return x !== dragged; });
       for (var i = 0; i < els.length; i++) {
         var r = els[i].getBoundingClientRect();
         if (y < r.top + r.height / 2) return els[i];
@@ -2372,34 +2478,58 @@
       return null;
     }
 
-    function startPlanDrag(item, clientY, pointerId, captureEl) {
+    function isOverMonthOut(x, y) {
+      var card = el.cardGrid.querySelector('.card[data-group="monthOut"]');
+      if (!card) return null;
+      var r = card.getBoundingClientRect();
+      return (x >= r.left - 8 && x <= r.right + 8 && y >= r.top - 8 && y <= r.bottom + 8) ? card : null;
+    }
+
+    function startPlanDrag(item, clientX, clientY, pointerId, captureEl) {
+      var wrap = item.closest('.swipe-wrap') || item;
+      wrap.classList.remove('swiped');
+      wrap.classList.add('dragging-wrap');
       pdrag = {
         item: item,
+        wrap: wrap,
+        startX: clientX,
         startY: clientY,
         pointerId: pointerId,
         moved: false,
-        from: item.dataset.sec
+        from: item.dataset.sec,
+        toMonthOut: false
       };
       item.classList.add('dragging');
-      item.style.transform = 'scale(1.03)';
+      wrap.style.transform = 'scale(1.03)';
       if (captureEl && captureEl.setPointerCapture) {
         try { captureEl.setPointerCapture(pointerId); } catch (e) {}
       }
     }
 
-    function movePlanDrag(clientY) {
+    function movePlanDrag(clientX, clientY) {
       if (!pdrag) return;
-      if (Math.abs(clientY - pdrag.startY) > 3) pdrag.moved = true;
+      if (Math.hypot(clientX - pdrag.startX, clientY - pdrag.startY) > 3) pdrag.moved = true;
+      var moCard = isOverMonthOut(clientX, clientY);
+      var allMo = el.cardGrid.querySelector('.card[data-group="monthOut"]');
+      if (allMo) allMo.classList.toggle('drop-over', !!moCard);
+      pdrag.toMonthOut = !!moCard;
+      if (moCard) {
+        Array.prototype.forEach.call(el.planWrap.querySelectorAll('.plan-list'), function (l) {
+          l.classList.remove('drop-over');
+        });
+        floatFollow(pdrag.wrap, clientX, clientY, true);
+        return;
+      }
       var list = planListUnder(clientY);
       if (!list) return;
       Array.prototype.forEach.call(el.planWrap.querySelectorAll('.plan-list'), function (l) {
         l.classList.toggle('drop-over', l === list);
       });
-      if (pdrag.item.parentElement !== list) list.appendChild(pdrag.item);
-      var after = planAfterElement(list, clientY, pdrag.item);
-      if (after) list.insertBefore(pdrag.item, after);
-      else list.appendChild(pdrag.item);
-      floatFollow(pdrag.item, 0, clientY, false);
+      if (pdrag.wrap.parentElement !== list) list.appendChild(pdrag.wrap);
+      var after = planAfterElement(list, clientY, pdrag.wrap);
+      if (after) list.insertBefore(pdrag.wrap, after);
+      else list.appendChild(pdrag.wrap);
+      floatFollow(pdrag.wrap, clientX, clientY, true);
     }
 
     function endPlanDrag() {
@@ -2407,14 +2537,44 @@
       var d = pdrag;
       pdrag = null;
       d.item.classList.remove('dragging');
-      d.item.style.transform = '';
+      d.wrap.classList.remove('dragging-wrap');
+      d.wrap.style.transform = '';
       suppressClickUntil = Date.now() + 320;
+      var allMo = el.cardGrid.querySelector('.card[data-group="monthOut"]');
+      if (allMo) allMo.classList.remove('drop-over');
       Array.prototype.forEach.call(el.planWrap.querySelectorAll('.plan-list'), function (l) {
         l.classList.remove('drop-over');
       });
       if (!d.moved) return;
 
-      var parentList = d.item.closest ? d.item.closest('.plan-list') : d.item.parentElement;
+      if (d.toMonthOut) {
+        var pid = d.item.dataset.pid;
+        var found = planItemById(pid);
+        if (found) {
+          var key = currentKey();
+          planRemoveItem(pid);
+          state.oneOff[key] = state.oneOff[key] || [];
+          var newId = uid();
+          state.oneOff[key].push({
+            id: newId,
+            type: 'expense',
+            name: found.item.name,
+            amount: found.item.amount,
+            day: null,
+            category: '쇼핑',
+            isPrivate: !!found.item.isPrivate
+          });
+          state.order.months[key] = state.order.months[key] || {};
+          state.order.months[key].monthOut = state.order.months[key].monthOut || [];
+          state.order.months[key].monthOut.push(newId);
+          saveState();
+          render();
+          toast('이번달 지출로 옮겼어요');
+        }
+        return;
+      }
+
+      var parentList = d.wrap.closest ? d.wrap.closest('.plan-list') : d.wrap.parentElement;
       var target = parentList ? parentList.dataset.planList : d.from;
       var idsOf = function (sec) {
         var l = el.planWrap.querySelector('[data-plan-list="' + sec + '"]');
@@ -2448,31 +2608,39 @@
 
     function bindPlanPointer() {
       var phold = null;
+      var psw = null;
       var clearPHold = function () {
         if (phold) { clearTimeout(phold.timer); phold = null; }
       };
 
       el.planWrap.addEventListener('pointerdown', function (e) {
+        if (e.target.closest('[data-pdel]')) return;
         var handle = e.target.closest('[data-pgrip]');
         if (handle) {
           var hItem = handle.closest('.pitem');
           if (!hItem) return;
           e.preventDefault();
-          startPlanDrag(hItem, e.clientY, e.pointerId, handle);
+          closeAllSwipes();
+          startPlanDrag(hItem, e.clientX, e.clientY, e.pointerId, handle);
           return;
         }
         if (e.target.closest('[data-pmove]') || e.target.closest('[data-priv-edit]')) return;
         var item = e.target.closest('.pitem');
         if (!item) return;
+        var wrap = item.closest('.swipe-wrap');
+        closeAllSwipes(wrap);
         clearPHold();
         var pid = e.pointerId, sx = e.clientX, sy = e.clientY;
+        var baseDx = (wrap && wrap.classList.contains('swiped')) ? -50 : 0;
+        psw = { item: item, wrap: wrap, pid: pid, sx: sx, sy: sy, baseDx: baseDx, dx: baseDx, active: false };
         phold = {
           pointerId: pid,
           x: sx,
           y: sy,
           timer: setTimeout(function () {
             phold = null;
-            startPlanDrag(item, sy, pid, item);
+            psw = null;
+            startPlanDrag(item, sx, sy, pid, item);
           }, 230)
         };
       }, { passive: false });
@@ -2481,18 +2649,50 @@
         if (phold && e.pointerId === phold.pointerId) {
           if (Math.hypot(e.clientX - phold.x, e.clientY - phold.y) > 8) clearPHold();
         }
+        if (psw && e.pointerId === psw.pid && !pdrag) {
+          var mdx = e.clientX - psw.sx;
+          var mdy = e.clientY - psw.sy;
+          if (!psw.active && Math.abs(mdx) > 8 && Math.abs(mdx) > Math.abs(mdy) * 1.2) {
+            psw.active = true;
+            clearPHold();
+            if (psw.wrap) psw.wrap.classList.add('swiping');
+          }
+          if (psw.active) {
+            if (e.cancelable) e.preventDefault();
+            var nx = Math.max(-56, Math.min(0, psw.baseDx + mdx));
+            psw.dx = nx;
+            psw.item.style.transform = 'translate3d(' + nx.toFixed(1) + 'px,0,0)';
+          }
+        }
         if (!pdrag || e.pointerId !== pdrag.pointerId) return;
         if (e.cancelable) e.preventDefault();
-        movePlanDrag(e.clientY);
+        movePlanDrag(e.clientX, e.clientY);
       }, { passive: false });
 
-      document.addEventListener('pointerup', function (e) {
+      var finishPSwipe = function (e) {
         if (phold && e.pointerId === phold.pointerId) clearPHold();
+        if (psw && e.pointerId === psw.pid) {
+          var s = psw;
+          psw = null;
+          if (s.wrap) s.wrap.classList.remove('swiping');
+          s.item.style.transform = '';
+          if (s.active) {
+            if (s.wrap) s.wrap.classList.toggle('swiped', s.dx < -24);
+            suppressClickUntil = Date.now() + 260;
+          } else if (s.baseDx < 0 && s.wrap) {
+            s.wrap.classList.remove('swiped');
+            suppressClickUntil = Date.now() + 260;
+          }
+        }
+      };
+
+      document.addEventListener('pointerup', function (e) {
+        finishPSwipe(e);
         if (!pdrag || e.pointerId !== pdrag.pointerId) return;
         endPlanDrag();
       });
       document.addEventListener('pointercancel', function (e) {
-        if (phold && e.pointerId === phold.pointerId) clearPHold();
+        finishPSwipe(e);
         if (!pdrag || e.pointerId !== pdrag.pointerId) return;
         endPlanDrag();
       });
@@ -2506,7 +2706,7 @@
           if (!item) return;
           var t = e.changedTouches[0];
           touchId = t.identifier;
-          startPlanDrag(item, t.clientY, 'touch', null);
+          startPlanDrag(item, t.clientX, t.clientY, 'touch', null);
         }, { passive: true });
 
         document.addEventListener('touchmove', function (e) {
@@ -2514,7 +2714,7 @@
           for (var i = 0; i < e.changedTouches.length; i++) {
             if (e.changedTouches[i].identifier === touchId) {
               if (e.cancelable) e.preventDefault();
-              movePlanDrag(e.changedTouches[i].clientY);
+              movePlanDrag(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
               break;
             }
           }
@@ -2644,6 +2844,12 @@
           openEditor({ mode: 'add', group: add.dataset.add });
           return;
         }
+        var del = e.target.closest('[data-del]');
+        if (del) {
+          e.stopPropagation();
+          deleteItemById(del.dataset.del);
+          return;
+        }
         var chk = e.target.closest('[data-check]');
         if (chk) {
           e.stopPropagation();
@@ -2711,6 +2917,15 @@
         }
         var add = e.target.closest('[data-plan-add]');
         if (add) { openPlanEditor({ mode: 'add', section: add.dataset.planAdd }); return; }
+        var pdel = e.target.closest('[data-pdel]');
+        if (pdel) {
+          e.stopPropagation();
+          planRemoveItem(pdel.dataset.pdel);
+          saveState();
+          render();
+          toast('삭제했어요');
+          return;
+        }
         var mv = e.target.closest('[data-pmove]');
         if (mv) {
           e.stopPropagation();
