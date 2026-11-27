@@ -1,0 +1,16 @@
+{
+  "name": "다음달 머니플랜",
+  "short_name": "머니플랜",
+  "description": "다음 달 예상 수입과 고정지출을 한눈에 계산하는 개인용 웹앱",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F7F8FA",
+  "theme_color": "#1F2937",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
