@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="머니플랜" />
+  <meta name="apple-mobile-web-app-title" content="머랭" />
   <meta name="theme-color" id="themeColorMeta" content="#FCF4F5" />
   <meta name="format-detection" content="telephone=no" />
   <link rel="manifest" href="./manifest.json" />
-  <link rel="apple-touch-icon" href="./icon.svg" />
-  <title>머니플랜 · 다음 달 생활비 계획</title>
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="./icon-192.png" />
+  <title>머랭 · 다음 달 생활비 계획</title>
   <style>
     /* ---------- 테마 변수 ---------- */
     :root {
@@ -582,7 +583,7 @@
     <header class="appbar">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-name">머니플랜</span>
+        <span class="brand-name">머랭</span>
       </div>
       <button class="theme-btn" id="themeBtn" aria-label="테마 바꾸기">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg>
@@ -2292,7 +2293,7 @@
       }
       var ours = ['recurring', 'oneOff', 'overrides', 'purchases', 'wishlist', 'startBal', 'order', 'theme', 'view']
         .some(function (k) { return Object.prototype.hasOwnProperty.call(parsed, k); });
-      if (!ours) { toast('머니플랜 데이터가 아니에요'); return; }
+      if (!ours) { toast('머랭 데이터가 아니에요'); return; }
 
       var next = normalizeState(parsed);
       var stock = next.recurring.length + (next.wishlist || []).length;
