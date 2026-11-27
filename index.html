@@ -556,6 +556,19 @@
     .field input:disabled { opacity: .65; }
     .switch:disabled { opacity: .5; }
     .money-input { position: relative; }
+    .preset-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
+    .preset-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border-radius: 999px;
+      border: 1px solid var(--line); background: var(--bg2); color: var(--fg);
+      font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .preset-chip .p-del { font-size: 13px; line-height: 1; color: var(--muted); padding: 0 2px; }
+    .preset-add {
+      padding: 5px 10px; border-radius: 999px;
+      border: 1px dashed var(--line2); background: transparent; color: var(--muted);
+      font-size: 12px; font-weight: 600; cursor: pointer;
+    }
     .money-input input { padding-right: 34px; font-variant-numeric: tabular-nums; }
     .money-input span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); pointer-events: none; }
     .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -756,6 +769,7 @@
       <div class="field">
         <label for="fName">이름</label>
         <input id="fName" type="text" autocomplete="off" placeholder="예: 월급, 월세, 통신비" />
+        <div class="preset-bar" id="namePresets"></div>
       </div>
 
       <div class="row2">
@@ -973,7 +987,7 @@
     var STORAGE_KEY = 'money_plan_v1';
 
     var CATS_FIXED = ['주거·관리', '통신', '구독', '교통', '할부', '이자', '원금', '저축·적금', '기타'];
-    var CATS_MONTHLY = ['경조사비', '신용카드', '쇼핑', '식비·모임', '의료·미용', '기타'];
+    var CATS_MONTHLY = ['경조사비', '신용카드', '후불', '쇼핑', '식비·모임', '의료·미용', '기타'];
     var CATS_WINDFALL = ['당근', '용돈', '기타'];
 
     var GROUPS = {
@@ -1078,6 +1092,7 @@
         startBal: {},
         purchases: {},
         wishlist: [],
+        presets: { income: [], windfall: [], fixed: [], monthly: [] },
         theme: 'pink',
         view: 'cards'
       };
@@ -1189,6 +1204,18 @@
         });
       }
       if (Array.isArray(raw.wishlist)) s.wishlist = normPlanList(raw.wishlist);
+
+      s.presets = { income: [], windfall: [], fixed: [], monthly: [] };
+      if (raw.presets && typeof raw.presets === 'object') {
+        ['income', 'windfall', 'fixed', 'monthly'].forEach(function (g) {
+          if (Array.isArray(raw.presets[g])) {
+            s.presets[g] = raw.presets[g]
+              .map(function (t) { return String(t || '').trim().slice(0, 60); })
+              .filter(function (t, i, arr) { return t && arr.indexOf(t) === i; })
+              .slice(0, 20);
+          }
+        });
+      }
 
       s.order = { global: { income: [], fixed: [] }, months: {} };
       if (raw.order && typeof raw.order === 'object') {
@@ -1778,6 +1805,7 @@
       updateCategoryOptions();
       updateScopeUI();
       updateInstallmentUI();
+      renderPresets();
 
       var bd = $('sheetBackdrop');
       bd.classList.add('open');
@@ -1799,6 +1827,27 @@
       } else {
         hint.textContent = rec ? m + '부터 매달 나가는 돈이에요 (고정지출)' : m + '에만 나가는 지출이에요 (이번달 지출)';
       }
+    }
+
+    function presetGroupKey() {
+      if (!ed) return 'income';
+      if (ed.group) return ed.group;
+      return ed.type === 'income' ? (isRecurringNow() ? 'income' : 'windfall') : (isRecurringNow() ? 'fixed' : 'monthly');
+    }
+
+    function renderPresets() {
+      var bar = $('namePresets');
+      if (!bar || !ed) return;
+      var gk = presetGroupKey();
+      var list = (state.presets && state.presets[gk]) ? state.presets[gk] : [];
+      var html = list.map(function (t, idx) {
+        return '<span class="preset-chip" data-preset-idx="' + idx + '">' +
+          '<span>' + esc(t) + '</span>' +
+          '<span class="p-del" data-preset-del="' + idx + '" role="button" aria-label="저장된 이름 삭제">×</span>' +
+        '</span>';
+      }).join('');
+      html += '<button class="preset-add" type="button" id="savePresetBtn">+ 이 이름 저장</button>';
+      bar.innerHTML = html;
     }
 
     function isRecurringNow() {
@@ -1992,11 +2041,16 @@
           delete base.installment;
           if (base.category === '할부') base.category = '기타';
         }
-        // 기본값을 바꾸면 이번 달 override는 정리
+        // 기본값을 바꾸면 이번 달 override는 정리하고, 다른 달 override의 비공개 여부도 동기화
         if (state.overrides[key]) {
           delete state.overrides[key][base.id];
           if (!Object.keys(state.overrides[key]).length) delete state.overrides[key];
         }
+        Object.keys(state.overrides).forEach(function (ok) {
+          if (state.overrides[ok] && state.overrides[ok][base.id]) {
+            state.overrides[ok][base.id].isPrivate = base.isPrivate;
+          }
+        });
       }
 
       saveState();
@@ -2329,6 +2383,7 @@
     function jumpToMonth(y, m) {
       viewYear = y;
       viewMonth = m;
+      revealedIds = {};
       render();
     }
 
@@ -2792,12 +2847,50 @@
       $('prevMonth').addEventListener('click', function () {
         viewMonth--;
         if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+        revealedIds = {};
         render();
       });
       $('nextMonth').addEventListener('click', function () {
         viewMonth++;
         if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+        revealedIds = {};
         render();
+      });
+
+      $('namePresets').addEventListener('click', function (e) {
+        if (!ed) return;
+        var gk = presetGroupKey();
+        state.presets = state.presets || { income: [], windfall: [], fixed: [], monthly: [] };
+        state.presets[gk] = state.presets[gk] || [];
+        var delEl = e.target.closest('[data-preset-del]');
+        if (delEl) {
+          var di = Number(delEl.dataset.presetDel);
+          state.presets[gk].splice(di, 1);
+          saveState();
+          renderPresets();
+          return;
+        }
+        var chip = e.target.closest('[data-preset-idx]');
+        if (chip) {
+          var ci = Number(chip.dataset.presetIdx);
+          if (state.presets[gk][ci] != null) {
+            $('fName').value = state.presets[gk][ci];
+            toast('이름을 불러왔어요');
+          }
+          return;
+        }
+        if (e.target.closest('#savePresetBtn')) {
+          var val = $('fName').value.trim().slice(0, 60);
+          if (!val) { toast('먼저 이름을 입력해 주세요'); try { $('fName').focus(); } catch (err) {} return; }
+          if (state.presets[gk].indexOf(val) < 0) {
+            state.presets[gk].push(val);
+            saveState();
+            renderPresets();
+            toast('자주 쓰는 이름에 저장했어요');
+          } else {
+            toast('이미 저장된 이름이에요');
+          }
+        }
       });
 
       // 연도·월 점프
