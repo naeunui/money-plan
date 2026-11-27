@@ -344,6 +344,11 @@
       position: absolute; top: 0; right: 0; bottom: 0; width: 52px; z-index: 1;
       border: none; background: #E53935; color: #FFFFFF;
       display: grid; place-items: center; cursor: pointer; padding: 0;
+      opacity: 0; pointer-events: none; transition: opacity .12s ease;
+    }
+    .swipe-wrap.swiping > .swipe-del,
+    .swipe-wrap.swiped > .swipe-del {
+      opacity: 1; pointer-events: auto;
     }
     .swipe-del svg { width: 17px; height: 17px; }
     .swipe-wrap.dragging-wrap { overflow: visible; z-index: 25; }
