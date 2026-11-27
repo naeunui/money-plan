@@ -275,9 +275,21 @@
     .item.paid { opacity: .48; }
     .item.paid .i-name { text-decoration: line-through; }
     .item.dragging {
-      opacity: .96; border-color: var(--accent); background: var(--card);
-      box-shadow: 0 8px 22px rgba(0,0,0,.14); position: relative; z-index: 5;
-      transition: none;
+      opacity: .82; border-color: var(--accent); background: var(--card);
+      box-shadow: 0 14px 30px rgba(0,0,0,.2); position: relative; z-index: 25;
+      transition: none; pointer-events: none;
+    }
+    .card[data-group="fixed"] .item-list { gap: 4px; }
+    .card[data-group="fixed"] .item { padding: 5px 8px 6px; border-radius: 10px; }
+    .card[data-group="fixed"] .i-name { font-size: 13px; }
+    .card[data-group="fixed"] .i-sub {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
+      margin-top: 2px;
+    }
+    .card[data-group="fixed"] .i-amt { margin-top: 0; font-size: 13.5px; }
+    .card[data-group="fixed"] .i-meta {
+      margin-top: 0; font-size: 11px; text-align: right;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .i-top { display: flex; align-items: center; gap: 6px; }
     .chk {
@@ -420,8 +432,9 @@
       transition: background .15s ease, border-color .15s ease, opacity .15s ease;
     }
     .pitem.dragging {
-      opacity: .96; border-color: var(--accent); background: var(--card);
-      box-shadow: 0 8px 22px rgba(0,0,0,.14); position: relative; z-index: 5; transition: none;
+      opacity: .82; border-color: var(--accent); background: var(--card);
+      box-shadow: 0 14px 30px rgba(0,0,0,.2); position: relative; z-index: 25;
+      transition: none; pointer-events: none;
     }
     .p-rank {
       width: 24px; flex: none; text-align: right;
@@ -1405,13 +1418,14 @@
       if (total === 0) sumClass = 'zero';
 
       var body;
+      var limit = (group === 'fixed') ? 8 : 4;
       if (list.length) {
         var isExp = !!expandedGroups[group];
-        var shown = (!isExp && list.length > 4) ? list.slice(0, 4) : list;
+        var shown = (!isExp && list.length > limit) ? list.slice(0, limit) : list;
         body = shown.map(function (it) { return itemHTML(it, group); }).join('');
-        if (list.length > 4) {
+        if (list.length > limit) {
           body += '<button class="more-btn" type="button" data-more="' + group + '">' +
-            (isExp ? '접기' : '+ ' + (list.length - 4) + '개 더보기') + '</button>';
+            (isExp ? '접기' : '+ ' + (list.length - limit) + '개 더보기') + '</button>';
         }
       } else {
         body = '<div class="empty">아직 없어요' +
@@ -1453,8 +1467,10 @@
           privEditBtn +
           '<span class="i-grip" data-handle="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
         '</div>' +
-        '<div class="i-amt ' + it.type + '">' + signedWon(it.amount, it.type) + '</div>' +
-        '<div class="i-meta">' + metaHtml + '</div>' +
+        '<div class="i-sub">' +
+          '<div class="i-amt ' + it.type + '">' + signedWon(it.amount, it.type) + '</div>' +
+          '<div class="i-meta">' + metaHtml + '</div>' +
+        '</div>' +
       '</div>';
     }
 
@@ -1989,6 +2005,7 @@
        7. 드래그 정렬 (Pointer / Touch)
        ========================================================= */
     var drag = null;
+    var suppressClickUntil = 0;
 
     function afterElement(container, y, dragged) {
       var els = Array.prototype.slice.call(container.querySelectorAll('.item'));
@@ -2006,6 +2023,13 @@
       return best;
     }
 
+    function floatFollow(el, clientY) {
+      el.style.transform = '';
+      var r = el.getBoundingClientRect();
+      var dy = clientY - (r.top + r.height / 2);
+      el.style.transform = 'translate3d(0,' + dy.toFixed(1) + 'px,0) scale(1.03)';
+    }
+
     function startDrag(item, clientY, pointerId, captureEl) {
       drag = {
         item: item,
@@ -2016,6 +2040,7 @@
         container: item.parentElement
       };
       item.classList.add('dragging');
+      item.style.transform = 'scale(1.03)';
       if (captureEl && captureEl.setPointerCapture) {
         try { captureEl.setPointerCapture(pointerId); } catch (e) {}
       }
@@ -2023,11 +2048,11 @@
 
     function moveDrag(clientY) {
       if (!drag) return;
-      if (Math.abs(clientY - drag.startY) > 4) drag.moved = true;
-      if (!drag.moved) return;
+      if (Math.abs(clientY - drag.startY) > 3) drag.moved = true;
       var after = afterElement(drag.container, clientY, drag.item);
       if (after === null) drag.container.appendChild(drag.item);
       else if (after !== drag.item) drag.container.insertBefore(drag.item, after);
+      floatFollow(drag.item, clientY);
     }
 
     function endDrag() {
@@ -2035,6 +2060,8 @@
       var d = drag;
       drag = null;
       d.item.classList.remove('dragging');
+      d.item.style.transform = '';
+      suppressClickUntil = Date.now() + 320;
       if (!d.moved) return;
       var ids = Array.prototype.slice.call(d.container.querySelectorAll('.item')).map(function (el) {
         return el.dataset.id;
@@ -2055,26 +2082,52 @@
     }
 
     function bindPointer() {
+      var hold = null;
+      var clearHold = function () {
+        if (hold) { clearTimeout(hold.timer); hold = null; }
+      };
+
       el.cardGrid.addEventListener('pointerdown', function (e) {
         var handle = e.target.closest('[data-handle]');
-        if (!handle) return;
-        var item = handle.closest('.item');
+        if (handle) {
+          var hItem = handle.closest('.item');
+          if (!hItem) return;
+          e.preventDefault();
+          startDrag(hItem, e.clientY, e.pointerId, handle);
+          return;
+        }
+        if (e.target.closest('[data-check]') || e.target.closest('[data-priv-edit]')) return;
+        var item = e.target.closest('.item');
         if (!item) return;
-        e.preventDefault();
-        startDrag(item, e.clientY, e.pointerId, handle);
+        clearHold();
+        var pid = e.pointerId, sx = e.clientX, sy = e.clientY;
+        hold = {
+          pointerId: pid,
+          x: sx,
+          y: sy,
+          timer: setTimeout(function () {
+            hold = null;
+            startDrag(item, sy, pid, item);
+          }, 230)
+        };
       }, { passive: false });
 
       document.addEventListener('pointermove', function (e) {
+        if (hold && e.pointerId === hold.pointerId) {
+          if (Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 8) clearHold();
+        }
         if (!drag || e.pointerId !== drag.pointerId) return;
         if (e.cancelable) e.preventDefault();
         moveDrag(e.clientY);
       }, { passive: false });
 
       document.addEventListener('pointerup', function (e) {
+        if (hold && e.pointerId === hold.pointerId) clearHold();
         if (!drag || e.pointerId !== drag.pointerId) return;
         endDrag();
       });
       document.addEventListener('pointercancel', function (e) {
+        if (hold && e.pointerId === hold.pointerId) clearHold();
         if (!drag || e.pointerId !== drag.pointerId) return;
         endDrag();
       });
@@ -2311,6 +2364,7 @@
         from: item.dataset.sec
       };
       item.classList.add('dragging');
+      item.style.transform = 'scale(1.03)';
       if (captureEl && captureEl.setPointerCapture) {
         try { captureEl.setPointerCapture(pointerId); } catch (e) {}
       }
@@ -2318,8 +2372,7 @@
 
     function movePlanDrag(clientY) {
       if (!pdrag) return;
-      if (Math.abs(clientY - pdrag.startY) > 4) pdrag.moved = true;
-      if (!pdrag.moved) return;
+      if (Math.abs(clientY - pdrag.startY) > 3) pdrag.moved = true;
       var list = planListUnder(clientY);
       if (!list) return;
       Array.prototype.forEach.call(el.planWrap.querySelectorAll('.plan-list'), function (l) {
@@ -2329,6 +2382,7 @@
       var after = planAfterElement(list, clientY, pdrag.item);
       if (after) list.insertBefore(pdrag.item, after);
       else list.appendChild(pdrag.item);
+      floatFollow(pdrag.item, clientY);
     }
 
     function endPlanDrag() {
@@ -2336,6 +2390,8 @@
       var d = pdrag;
       pdrag = null;
       d.item.classList.remove('dragging');
+      d.item.style.transform = '';
+      suppressClickUntil = Date.now() + 320;
       Array.prototype.forEach.call(el.planWrap.querySelectorAll('.plan-list'), function (l) {
         l.classList.remove('drop-over');
       });
@@ -2374,26 +2430,52 @@
     }
 
     function bindPlanPointer() {
+      var phold = null;
+      var clearPHold = function () {
+        if (phold) { clearTimeout(phold.timer); phold = null; }
+      };
+
       el.planWrap.addEventListener('pointerdown', function (e) {
         var handle = e.target.closest('[data-pgrip]');
-        if (!handle) return;
-        var item = handle.closest('.pitem');
+        if (handle) {
+          var hItem = handle.closest('.pitem');
+          if (!hItem) return;
+          e.preventDefault();
+          startPlanDrag(hItem, e.clientY, e.pointerId, handle);
+          return;
+        }
+        if (e.target.closest('[data-pmove]') || e.target.closest('[data-priv-edit]')) return;
+        var item = e.target.closest('.pitem');
         if (!item) return;
-        e.preventDefault();
-        startPlanDrag(item, e.clientY, e.pointerId, handle);
+        clearPHold();
+        var pid = e.pointerId, sx = e.clientX, sy = e.clientY;
+        phold = {
+          pointerId: pid,
+          x: sx,
+          y: sy,
+          timer: setTimeout(function () {
+            phold = null;
+            startPlanDrag(item, sy, pid, item);
+          }, 230)
+        };
       }, { passive: false });
 
       document.addEventListener('pointermove', function (e) {
+        if (phold && e.pointerId === phold.pointerId) {
+          if (Math.hypot(e.clientX - phold.x, e.clientY - phold.y) > 8) clearPHold();
+        }
         if (!pdrag || e.pointerId !== pdrag.pointerId) return;
         if (e.cancelable) e.preventDefault();
         movePlanDrag(e.clientY);
       }, { passive: false });
 
       document.addEventListener('pointerup', function (e) {
+        if (phold && e.pointerId === phold.pointerId) clearPHold();
         if (!pdrag || e.pointerId !== pdrag.pointerId) return;
         endPlanDrag();
       });
       document.addEventListener('pointercancel', function (e) {
+        if (phold && e.pointerId === phold.pointerId) clearPHold();
         if (!pdrag || e.pointerId !== pdrag.pointerId) return;
         endPlanDrag();
       });
@@ -2551,6 +2633,7 @@
           togglePaid(chk.dataset.check);
           return;
         }
+        if (Date.now() < suppressClickUntil) return;
         if (e.target.closest('[data-handle]')) return;
         var item = e.target.closest('.item');
         if (item) {
@@ -2611,6 +2694,7 @@
           movePlanItem(mv.dataset.pmove);
           return;
         }
+        if (Date.now() < suppressClickUntil) return;
         if (e.target.closest('[data-pgrip]')) return;
         var item = e.target.closest('.pitem');
         if (item) {
