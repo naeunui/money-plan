@@ -1244,6 +1244,9 @@
       return list
         .map(function (x, i) { return { x: x, i: i, p: ids.indexOf(x.id) }; })
         .sort(function (a, b) {
+          var ap = a.x.isPrivate ? 1 : 0;
+          var bp = b.x.isPrivate ? 1 : 0;
+          if (ap !== bp) return ap - bp;
           var pa = a.p < 0 ? Number.MAX_SAFE_INTEGER : a.p;
           var pb = b.p < 0 ? Number.MAX_SAFE_INTEGER : b.p;
           return pa - pb || a.i - b.i;
@@ -1511,8 +1514,8 @@
     }
 
     function planList(section, key) {
-      if (section === 'wish') return state.wishlist || [];
-      return (state.purchases || {})[key] || [];
+      var raw = section === 'wish' ? (state.wishlist || []) : ((state.purchases || {})[key] || []);
+      return raw.filter(function (x) { return !x.isPrivate; }).concat(raw.filter(function (x) { return !!x.isPrivate; }));
     }
 
     function planTotal(list) {
