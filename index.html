@@ -1347,7 +1347,6 @@
     function itemMeta(it) {
       var parts = [];
       if (it.day) parts.push(it.day + '일');
-      else parts.push('날짜 미정');
       if (it.type === 'expense' && it.category) parts.push(it.category);
       if (it.inst) parts.push(it.inst.totalNo ? (it.inst.no + '/' + it.inst.totalNo + '회차') : (it.inst.no + '회차'));
       if (it.overridden) parts.push('이번 달만');
