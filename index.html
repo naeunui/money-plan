@@ -283,7 +283,10 @@
     }
     .card[data-group="fixed"] .item { min-width: 0; padding: 8px 7px 9px; }
     .card[data-group="fixed"] .i-top { gap: 4px; }
-    .card[data-group="fixed"] .i-grip { width: 14px; }
+    .card[data-group="fixed"] .i-grip { width: 20px; height: 26px; }
+    .card[data-group="fixed"] .i-grip svg { width: 15px; height: 19px; }
+    .card[data-group="fixed"] .priv-edit { width: 24px; height: 24px; }
+    .card[data-group="fixed"] .priv-edit svg { width: 14px; height: 14px; }
     .card[data-group="fixed"] .i-cat { font-size: 9.5px; padding: 1px 4px; margin-left: 3px; }
     .card[data-group="fixed"] .more-btn,
     .card[data-group="fixed"] .empty { grid-column: 1 / -1; }
@@ -307,10 +310,10 @@
       vertical-align: 1px;
     }
     .i-grip {
-      width: 20px; height: 22px; flex: none; display: grid; place-items: center;
-      color: var(--muted); opacity: .68; touch-action: none; cursor: grab;
+      width: 26px; height: 28px; flex: none; display: grid; place-items: center;
+      color: var(--muted); opacity: .75; touch-action: none; cursor: grab;
     }
-    .i-grip svg { width: 13px; height: 17px; }
+    .i-grip svg { width: 17px; height: 21px; }
     .i-amt {
       font-size: 15.5px; font-weight: 800; letter-spacing: -.4px; margin-top: 0;
       font-variant-numeric: tabular-nums; white-space: nowrap;
@@ -354,11 +357,11 @@
     .swipe-wrap.dragging-wrap { overflow: visible; z-index: 25; }
     .swipe-wrap.dragging-wrap > .swipe-del { display: none; }
     .priv-edit {
-      width: 22px; height: 22px; flex: none; border: none; border-radius: 6px;
+      width: 28px; height: 28px; flex: none; border: none; border-radius: 7px;
       background: transparent; color: var(--muted); display: grid; place-items: center;
       cursor: pointer; padding: 0;
     }
-    .priv-edit svg { width: 12px; height: 12px; }
+    .priv-edit svg { width: 16px; height: 16px; }
     .priv-edit:active { background: var(--line); }
     .empty { font-size: 13px; color: var(--muted); padding: 14px 2px; line-height: 1.45; }
     .empty button {
@@ -484,10 +487,10 @@
     }
     .p-move svg { width: 15px; height: 15px; }
     .p-grip {
-      width: 20px; height: 26px; flex: none; display: grid; place-items: center;
-      color: var(--muted); opacity: .68; touch-action: none; cursor: grab;
+      width: 26px; height: 30px; flex: none; display: grid; place-items: center;
+      color: var(--muted); opacity: .75; touch-action: none; cursor: grab;
     }
-    .p-grip svg { width: 13px; height: 18px; }
+    .p-grip svg { width: 17px; height: 22px; }
 
     /* ---------- 연도·월 선택 ---------- */
     .year-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
