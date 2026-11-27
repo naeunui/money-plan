@@ -185,14 +185,15 @@
       position: relative;
       background: var(--sum-bg); color: var(--sum-fg);
       border: 1px solid var(--sum-line);
-      border-radius: 22px; padding: 16px 18px 14px; margin: 76px 0 10px;
+      border-radius: 22px; padding: 16px 18px 14px; margin: 92px 0 10px;
     }
     .mering-cat {
       position: absolute;
       right: 72px;
-      top: -90px;
-      width: 190px;
-      height: 112px;
+      top: -102px;
+      width: 176px;
+      height: auto;
+      display: block;
       pointer-events: none;
       z-index: 2;
     }
@@ -707,20 +708,7 @@
     </div>
 
     <section class="summary">
-      <svg class="mering-cat" viewBox="0 0 160 94" aria-hidden="true">
-        <path d="M18 76 C4 70 4 46 18 36 C16 17 24 6 40 9 C50 11 58 20 62 24 C73 21 87 21 98 24 C102 20 110 11 120 9 C136 6 144 17 142 36 C156 46 156 70 142 76 Z" fill="#FFFFFF" stroke="#7A7A82" stroke-width="3.6" stroke-linejoin="round"/>
-        <path d="M30 30 C29 19 33 14 40 16 C46 17 51 22 53 27 Z" fill="#F9B3C6"/>
-        <path d="M130 30 C131 19 127 14 120 16 C114 17 109 22 107 27 Z" fill="#F9B3C6"/>
-        <circle cx="37" cy="58" r="11.5" fill="#F9B3C6"/>
-        <circle cx="123" cy="58" r="11.5" fill="#F9B3C6"/>
-        <circle cx="57" cy="49" r="4.8" fill="#18181B"/>
-        <circle cx="103" cy="49" r="4.8" fill="#18181B"/>
-        <path d="M71 51 Q75.5 58 80 51 Q84.5 58 89 51" fill="none" stroke="#18181B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <rect x="24" y="68" width="28" height="17" rx="8.5" fill="#FFFFFF" stroke="#7A7A82" stroke-width="3.4"/>
-        <path d="M34 79 L34 84 M42 79 L42 84" stroke="#7A7A82" stroke-width="2.4" stroke-linecap="round"/>
-        <rect x="108" y="68" width="28" height="17" rx="8.5" fill="#FFFFFF" stroke="#7A7A82" stroke-width="3.4"/>
-        <path d="M118 79 L118 84 M126 79 L126 84" stroke="#7A7A82" stroke-width="2.4" stroke-linecap="round"/>
-      </svg>
+      <img class="mering-cat" src="mering-cat.png" alt="" aria-hidden="true">
       <div class="sum-label">이 달 남는 돈</div>
       <div class="sum-value" id="netBalance">0원</div>
       <div class="sum-sub" id="dailyBudget">하루에 얼마나 쓸 수 있는지 계산해요</div>
