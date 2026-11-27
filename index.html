@@ -36,6 +36,14 @@
       --sum-line: #EFC9D4;
       --sum-in: #A62F55;
       --sum-out: #4B3A40;
+      --set-a-bg: #FFF7F9;
+      --set-a-line: #F6D9E1;
+      --set-a-point: #C2466D;
+      --set-b-bg: #F5F7FA;
+      --set-b-line: #E6E9EF;
+      --set-b-point: #5F6B7A;
+      --mark-in: #2F6FEB;
+      --mark-out: #E0455A;
       --shadow: 0 1px 2px rgba(38, 25, 29, .04), 0 10px 26px rgba(38, 25, 29, .06);
       --radius: 18px;
     }
@@ -62,6 +70,14 @@
       --sum-line: #2C2C2C;
       --sum-in: #FFFFFF;
       --sum-out: #D6D6D6;
+      --set-a-bg: #E9E9E9;
+      --set-a-line: #D3D3D3;
+      --set-a-point: #0B0B0B;
+      --set-b-bg: #FBFBFB;
+      --set-b-line: #E4E4E4;
+      --set-b-point: #7A7A7A;
+      --mark-in: #2F6FEB;
+      --mark-out: #D8424C;
       --shadow: none;
     }
     body[data-theme="dark"] {
@@ -87,6 +103,14 @@
       --sum-line: #2C2C33;
       --sum-in: #FFFFFF;
       --sum-out: #C4C4CD;
+      --set-a-bg: #1A1418;
+      --set-a-line: #34232B;
+      --set-a-point: #EFA8BD;
+      --set-b-bg: #121216;
+      --set-b-line: #26262C;
+      --set-b-point: #93A3B5;
+      --mark-in: #6E9BF2;
+      --mark-out: #F0656B;
       --shadow: none;
     }
 
@@ -139,7 +163,14 @@
       display: grid; place-items: center; cursor: pointer;
     }
     .icon-btn svg { width: 18px; height: 18px; }
-    .month-title { font-size: 19px; font-weight: 800; letter-spacing: -.5px; min-width: 122px; text-align: center; }
+    .month-title {
+      display: flex; align-items: center; justify-content: center; gap: 3px;
+      font-size: 19px; font-weight: 800; letter-spacing: -.5px; min-width: 122px; text-align: center;
+      padding: 5px 4px; margin: 0; border: none; background: transparent;
+      color: var(--text); font-family: inherit; cursor: pointer; border-radius: 10px;
+    }
+    .month-title:active { background: var(--card-2); }
+    .month-title svg { width: 13px; height: 13px; opacity: .45; flex: none; }
     .pill {
       font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px;
       background: var(--accent-soft); color: var(--accent-ink); white-space: nowrap;
@@ -181,6 +212,22 @@
 
     /* ---------- 2×2 카드 ---------- */
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+    .set {
+      border-radius: 20px; padding: 7px 6px 8px; min-width: 0;
+      background: var(--set-bg); border: 1px solid var(--set-line);
+      display: flex; flex-direction: column; gap: 7px;
+    }
+    .set-a { --set-bg: var(--set-a-bg); --set-line: var(--set-a-line); --set-point: var(--set-a-point); }
+    .set-b { --set-bg: var(--set-b-bg); --set-line: var(--set-b-line); --set-point: var(--set-b-point); }
+    .set-head {
+      display: flex; align-items: center; gap: 5px; padding: 1px 6px 0;
+      font-size: 11px; font-weight: 800; letter-spacing: -.1px; color: var(--set-point);
+    }
+    .set-head::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor; flex: none; opacity: .85;
+    }
+    .set .card { box-shadow: none; }
     .card {
       background: var(--card); border: 1px solid var(--line); border-radius: 16px;
       padding: 12px 11px 11px; min-width: 0; box-shadow: var(--shadow);
@@ -282,16 +329,22 @@
     .start-input span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); pointer-events: none; }
     .tl { margin-top: 14px; }
     .tl-row {
-      display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line);
+      display: flex; gap: 9px; padding: 9px 0; border-top: 1px solid var(--line);
       cursor: pointer;
     }
+    .tl-mark {
+      width: 4px; height: 19px; border-radius: 2px; flex: none; margin-top: 2px;
+      background: var(--line-strong);
+    }
+    .tl-mark.in { background: var(--mark-in); }
+    .tl-mark.out { background: var(--mark-out); }
     .tl-row:first-child { border-top: none; padding-top: 2px; }
     .tl-row.day-start { border-top: 1px solid var(--line-strong); }
     .tl-row.paid { opacity: .48; }
     .tl-row.paid .tl-name { text-decoration: line-through; }
-    .tl-day { width: 34px; flex: none; text-align: center; padding-top: 1px; }
-    .tl-num { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.2; }
-    .tl-unit { font-size: 11px; color: var(--muted); line-height: 1.3; }
+    .tl-day { width: 38px; flex: none; text-align: center; padding-top: 1px; }
+    .tl-num { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.2; white-space: nowrap; }
+    .tl-unit { font-size: 11px; color: var(--muted); line-height: 1.3; white-space: nowrap; }
     .tl-body { flex: 1; min-width: 0; }
     .tl-line { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
     .tl-name { font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -.2px; }
@@ -303,6 +356,82 @@
     .tl-bal { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
     .tl-bal.neg { color: var(--warn); }
     .flow-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 22px 0; }
+
+    /* ---------- 구매예정 · 위시리스트 ---------- */
+    .plan-sec {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 12px 11px 11px; margin-top: 10px; box-shadow: var(--shadow);
+    }
+    .plan-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .plan-title { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .plan-title svg { width: 15px; height: 15px; flex: none; color: var(--muted); }
+    .plan-title span { font-size: 13px; font-weight: 800; letter-spacing: -.3px; white-space: nowrap; }
+    .plan-right { display: flex; align-items: center; gap: 7px; flex: none; }
+    .plan-sum { font-size: 12px; font-weight: 800; color: var(--accent-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .plan-hint { font-size: 11.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    .plan-list {
+      display: flex; flex-direction: column; gap: 6px; margin-top: 9px;
+      border-radius: 12px; padding: 2px; min-height: 30px;
+      transition: background .15s ease, box-shadow .15s ease;
+    }
+    .plan-list.drop-over { background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent); }
+    .plan-empty { font-size: 12px; color: var(--muted); padding: 8px 4px; line-height: 1.4; }
+    .pitem {
+      display: flex; align-items: flex-start; gap: 7px;
+      background: var(--card-2); border: 1px solid transparent; border-radius: 11px;
+      padding: 8px 7px 8px 4px; cursor: pointer;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+      transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+    .pitem.dragging {
+      opacity: .96; border-color: var(--accent); background: var(--card);
+      box-shadow: 0 8px 22px rgba(0,0,0,.14); position: relative; z-index: 5; transition: none;
+    }
+    .p-rank {
+      width: 21px; flex: none; text-align: right; padding-top: 1px;
+      font-size: 12px; font-weight: 800; color: var(--accent-ink); font-variant-numeric: tabular-nums;
+    }
+    .p-body { flex: 1; min-width: 0; }
+    .p-line { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .p-name { font-size: 13px; font-weight: 700; letter-spacing: -.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .p-amt { font-size: 13px; font-weight: 800; color: var(--accent-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .p-memo { font-size: 12px; color: var(--muted); line-height: 1.35; margin-top: 1px; word-break: keep-all; }
+    .p-move {
+      width: 24px; height: 24px; flex: none; border-radius: 8px;
+      border: 1px solid var(--line-strong); background: transparent; color: var(--muted);
+      display: grid; place-items: center; cursor: pointer; padding: 0;
+    }
+    .p-move svg { width: 12px; height: 12px; }
+    .p-grip {
+      width: 16px; height: 22px; flex: none; display: grid; place-items: center;
+      color: var(--muted); opacity: .68; touch-action: none; cursor: grab;
+    }
+    .p-grip svg { width: 11px; height: 15px; }
+
+    /* ---------- 연도·월 선택 ---------- */
+    .year-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .year-row .yr { font-size: 17px; font-weight: 800; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
+    .yr-btn {
+      width: 42px; height: 42px; border-radius: 12px; flex: none;
+      border: 1px solid var(--line-strong); background: var(--card-2); color: var(--text);
+      display: grid; place-items: center; cursor: pointer;
+    }
+    .yr-btn svg { width: 16px; height: 16px; }
+    .quick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .quick-row button {
+      border: 1px solid var(--line); background: var(--card-2); color: var(--text);
+      border-radius: 12px; padding: 11px 6px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+    }
+    .quick-row button:active { border-color: var(--accent); }
+    .month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .month-grid button {
+      border: 1px solid var(--line); background: var(--card-2); color: var(--text);
+      border-radius: 12px; padding: 13px 0; font-family: inherit; font-size: 14px; font-weight: 800;
+      cursor: pointer; font-variant-numeric: tabular-nums;
+    }
+    .month-grid button.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+    .month-grid button.today:not(.on) { border-color: var(--accent); color: var(--accent-ink); }
+    .month-grid button.today.on::after { content: '오늘'; display: block; font-size: 10px; font-weight: 700; opacity: .8; margin-top: 1px; }
 
     /* ---------- 시트(모달) ---------- */
     .backdrop {
@@ -413,6 +542,20 @@
     .theme-opt .tick { width: 18px; height: 18px; color: var(--accent); opacity: 0; }
     .theme-opt.active .tick { opacity: 1; }
 
+    .data-block { margin-top: 18px; padding-top: 15px; border-top: 1px solid var(--line); }
+    .data-block > .sub-label { margin-bottom: 4px; }
+    .data-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .data-btns .btn { padding: 12px 8px; font-size: 13.5px; }
+    .data-area {
+      width: 100%; min-height: 96px; margin-top: 9px; padding: 10px;
+      border: 1px solid var(--line-strong); border-radius: 12px;
+      background: var(--card-2); color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px; line-height: 1.45; resize: vertical;
+      -webkit-appearance: none; appearance: none;
+    }
+    .data-area:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
     .toast {
       position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom));
       transform: translate(-50%, 12px); z-index: 80;
@@ -453,7 +596,12 @@
         <button class="icon-btn" id="prevMonth" aria-label="이전 달">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
         </button>
-        <div class="month-title" id="monthLabel">2026년 12월</div>
+        <div id="monthLabelWrap">
+          <button class="month-title" id="monthLabelBtn" type="button" aria-haspopup="dialog" aria-label="연도와 월 선택">
+            <span id="monthLabel">2026년 12월</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5l6 6 6-6"/></svg>
+          </button>
+        </div>
         <button class="icon-btn" id="nextMonth" aria-label="다음 달">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
         </button>
@@ -480,16 +628,17 @@
     <div class="seg" id="viewSeg" role="tablist">
       <button type="button" data-view="cards" class="active" role="tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
-        카드 보기
+        한눈에
       </button>
       <button type="button" data-view="flow" role="tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h6M4 12h10M4 18h6"/><path d="M17 9l3 3-3 3"/></svg>
-        날짜 흐름
+        요일별
       </button>
     </div>
 
     <div id="cardsView">
       <div class="grid" id="cardGrid"></div>
+      <div id="planWrap"></div>
       <p class="foot-hint">항목을 탭하면 수정할 수 있어요<br>오른쪽 ⋮⋮를 끌어서 순서를 바꿔 보세요</p>
     </div>
 
@@ -589,7 +738,7 @@
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="themeTitle">
       <div class="grab"></div>
       <div class="sheet-head">
-        <h3 id="themeTitle">테마</h3>
+        <h3 id="themeTitle">테마 · 데이터</h3>
         <button class="x-btn" id="themeClose" aria-label="닫기">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
@@ -610,6 +759,92 @@
           <span class="t"><b>다크 모노톤</b><small>블랙 · 차콜 배경 · 모노톤 아이콘</small></span>
           <svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>
         </button>
+      </div>
+
+      <div class="data-block">
+        <div class="sub-label">데이터 옮기기</div>
+        <p class="hint-line" style="margin-top:0">브라우저나 홈 화면 앱을 바꾸면 내용이 따로 저장돼요. 아래 칸에 담아 다른 곳에서 불러오면 그대로 옮길 수 있어요.</p>
+        <div class="data-btns">
+          <button class="btn ghost" id="exportBtn" type="button">내보내기 (복사)</button>
+          <button class="btn ghost" id="importBtn" type="button">불러오기 (붙여넣기)</button>
+        </div>
+        <textarea class="data-area" id="dataArea" spellcheck="false" placeholder="여기에 붙여넣고 '불러오기'를 눌러 주세요"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 연도·월 선택 시트 -->
+  <div class="backdrop" id="monthBackdrop">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="monthPickTitle">
+      <div class="grab"></div>
+      <div class="sheet-head">
+        <h3 id="monthPickTitle">연도 · 월</h3>
+        <button class="x-btn" id="monthPickClose" aria-label="닫기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="year-row">
+        <button class="yr-btn" id="prevYear" type="button" aria-label="1년 전">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="yr" id="pickerYear">2026년</div>
+        <button class="yr-btn" id="nextYear" type="button" aria-label="1년 후">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="quick-row">
+        <button type="button" data-jump="this">이번 달</button>
+        <button type="button" data-jump="next">다음 달</button>
+      </div>
+
+      <div class="month-grid" id="monthGrid"></div>
+    </div>
+  </div>
+
+  <!-- 구매예정·위시리스트 시트 -->
+  <div class="backdrop" id="planBackdrop">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="planTitle">
+      <div class="grab"></div>
+      <div class="sheet-head">
+        <h3 id="planTitle">구매예정 추가</h3>
+        <button class="x-btn" id="planClose" aria-label="닫기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="field">
+        <label for="pName">이름</label>
+        <input id="pName" type="text" autocomplete="off" placeholder="예: 무선 이어폰" />
+      </div>
+
+      <div class="field">
+        <label for="pAmount">금액 (선택)</label>
+        <div class="money-input">
+          <input id="pAmount" type="text" inputmode="numeric" placeholder="0" autocomplete="off" />
+          <span>원</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pMemo">메모 (선택)</label>
+        <input id="pMemo" type="text" autocomplete="off" placeholder="예: 12월 세일 때" />
+      </div>
+
+      <div id="planScopeField">
+        <div class="sub-label">어느 목록에 둘까요</div>
+        <div class="seg" id="planScopeSeg">
+          <button type="button" data-plan-scope="month">이번달 구매예정</button>
+          <button type="button" data-plan-scope="wish">위시리스트</button>
+        </div>
+        <p class="hint-line" id="planScopeHint"></p>
+      </div>
+
+      <div class="sheet-actions" id="planActions">
+        <button class="btn danger" id="planDelete" type="button" style="display:none">삭제</button>
+        <button class="btn ghost" id="planCancel">취소</button>
+        <button class="btn primary" id="planSave">저장</button>
       </div>
     </div>
   </div>
@@ -635,7 +870,12 @@
       monthly:  { title: '이번달 지출', type: 'expense', rec: false }
     };
 
-    var GROUP_ICON = { income: 'arrowIn', windfall: 'sparkle', fixed: 'repeat', monthly: 'receipt' };
+    var GROUP_ICON = { income: 'arrowIn', windfall: 'sparkle', fixed: 'arrowOut', monthly: 'receipt' };
+
+    var PLAN = {
+      month: { title: '이번달 구매예정', icon: 'cart' },
+      wish:  { title: '위시리스트', icon: 'star' }
+    };
 
     var THEMES = {
       mono: { name: '화이트', meta: '#F3F3F3', dot: '#FFFFFF' },
@@ -649,6 +889,10 @@
       check:   '<path d="M4 12.5l5 5L20 6.5"/>',
       x:       '<path d="M6 6l12 12M18 6L6 18"/>',
       arrowIn: '<path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M5 20h14"/>',
+      arrowOut:'<path d="M12 20V9"/><path d="M7.5 13.5L12 9l4.5 4.5"/><path d="M5 4h14"/>',
+      cart:    '<path d="M2.8 4h2.3l2.1 10.2h11.1l1.9-7.2H6.2"/><circle cx="9.6" cy="19.2" r="1.3" fill="currentColor" stroke="none"/><circle cx="17.7" cy="19.2" r="1.3" fill="currentColor" stroke="none"/>',
+      star:    '<path d="M12 3.8l2.5 5.1 5.6.8-4.1 4 1 5.6-5-2.6-5 2.6 1-5.6-4.1-4 5.6-.8z"/>',
+      swap:    '<path d="M8 20V5"/><path d="M4.5 8.5L8 5l3.5 3.5"/><path d="M16 4v15"/><path d="M12.5 15.5L16 19l3.5-3.5"/>',
       sparkle: '<path d="M12 3.5l1.7 4.9 4.8 1.6-4.8 1.6L12 16.5l-1.7-4.9L5.5 10l4.8-1.6z"/><path d="M18.5 15.5l.7 1.9 1.8.6-1.8.6-.7 1.9-.7-1.9-1.8-.6 1.8-.6z"/>',
       repeat:  '<path d="M4.5 10.5h11"/><path d="M12.5 7.5l3 3-3 3"/><path d="M19.5 13.5h-11"/><path d="M11.5 16.5l-3-3 3-3"/>',
       receipt: '<path d="M6 3.5h12v17l-2.4-1.6-2.4 1.6-2.4-1.6L8.4 20.5 6 18.9z"/><path d="M9 8.5h6M9 12h6"/>',
@@ -688,6 +932,11 @@
     function daysInMonth(y, m) {
       return new Date(y, m + 1, 0).getDate();
     }
+    var WEEKDAY = ['일', '월', '화', '수', '목', '금', '토'];
+    function weekdayOf(y, m, d) {
+      if (!d || d < 1 || d > daysInMonth(y, m)) return '';
+      return WEEKDAY[new Date(y, m, d).getDay()];
+    }
 
     var nf = new Intl.NumberFormat('ko-KR');
     function num(n) { return nf.format(Math.round(Number(n) || 0)); }
@@ -703,7 +952,7 @@
 
     function emptyState() {
       return {
-        version: 2,
+        version: 3,
         recurring: [
           { id: 'r_seed_income', type: 'income', name: '월급 (예시)', amount: 2500000, day: 25, category: '수입' },
           { id: 'r_seed_phone', type: 'expense', name: '통신비 (예시)', amount: 45000, day: 15, category: '통신' }
@@ -713,9 +962,28 @@
         paid: {},
         order: { global: { income: [], fixed: [] }, months: {} },
         startBal: {},
+        purchases: {},
+        wishlist: [],
         theme: 'pink',
         view: 'cards'
       };
+    }
+
+    /* 구매예정·위시리스트 항목: 금액·메모는 비워도 됨 */
+    function normPlanItem(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      var name = String(raw.name || '').trim();
+      if (!name) return null;
+      return {
+        id: raw.id ? String(raw.id) : uid(),
+        name: name.slice(0, 80),
+        amount: Math.max(0, Math.round(Number(raw.amount) || 0)),
+        memo: String(raw.memo == null ? '' : raw.memo).slice(0, 200)
+      };
+    }
+
+    function normPlanList(list) {
+      return Array.isArray(list) ? list.map(normPlanItem).filter(Boolean) : [];
     }
 
     /* --- 저장 데이터 정규화(마이그레이션) --- */
@@ -761,6 +1029,11 @@
         raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
       } catch (e) { raw = null; }
       if (!raw || typeof raw !== 'object') return emptyState();
+      return normalizeState(raw);
+    }
+
+    /* 저장된 JSON(또는 붙여넣은 백업) → 앱 상태 */
+    function normalizeState(raw) {
 
       var s = emptyState();
       s.recurring = [];
@@ -781,6 +1054,17 @@
       if (raw.paid && typeof raw.paid === 'object') s.paid = raw.paid;
       if (raw.overrides && typeof raw.overrides === 'object') s.overrides = raw.overrides;
       if (raw.startBal && typeof raw.startBal === 'object') s.startBal = raw.startBal;
+
+      s.purchases = {};
+      s.wishlist = [];
+      if (raw.purchases && typeof raw.purchases === 'object') {
+        Object.keys(raw.purchases).forEach(function (k) {
+          if (!/^\d{4}-\d{2}$/.test(k)) return;
+          var list = normPlanList(raw.purchases[k]);
+          if (list.length) s.purchases[k] = list;
+        });
+      }
+      if (Array.isArray(raw.wishlist)) s.wishlist = normPlanList(raw.wishlist);
 
       s.order = { global: { income: [], fixed: [] }, months: {} };
       if (raw.order && typeof raw.order === 'object') {
@@ -903,12 +1187,14 @@
 
     function cacheEls() {
       el.monthLabel = $('monthLabel');
+      el.monthLabelBtn = $('monthLabelBtn');
       el.monthBadge = $('monthBadge');
       el.netBalance = $('netBalance');
       el.dailyBudget = $('dailyBudget');
       el.totalIncome = $('totalIncome');
       el.totalExpense = $('totalExpense');
       el.cardGrid = $('cardGrid');
+      el.planWrap = $('planWrap');
       el.cardsView = $('cardsView');
       el.flowView = $('flowView');
       el.flowRoot = $('flowRoot');
@@ -962,9 +1248,18 @@
       });
 
       if (isCards) {
-        el.cardGrid.innerHTML = ['income', 'windfall', 'fixed', 'monthly']
-          .map(function (g) { return cardHTML(g, groups[g]); })
-          .join('');
+        el.cardGrid.innerHTML =
+          '<div class="set set-a">' +
+            '<div class="set-head">매달 반복</div>' +
+            cardHTML('income', groups.income) +
+            cardHTML('fixed', groups.fixed) +
+          '</div>' +
+          '<div class="set set-b">' +
+            '<div class="set-head">이번 달만</div>' +
+            cardHTML('windfall', groups.windfall) +
+            cardHTML('monthly', groups.monthly) +
+          '</div>';
+        el.planWrap.innerHTML = planSectionHTML('month', key) + planSectionHTML('wish', key);
       } else {
         el.flowRoot.innerHTML = flowHTML(groups, key);
       }
@@ -1017,6 +1312,52 @@
       '</div>';
     }
 
+    function planList(section, key) {
+      if (section === 'wish') return state.wishlist || [];
+      return (state.purchases || {})[key] || [];
+    }
+
+    function planTotal(list) {
+      return list.reduce(function (s, it) { return s + (Number(it.amount) || 0); }, 0);
+    }
+
+    function planItemHTML(it, section, i) {
+      return '<div class="pitem" data-pid="' + esc(it.id) + '" data-sec="' + section + '" role="button" tabindex="0">' +
+        '<span class="p-rank">' + (i + 1) + '.</span>' +
+        '<div class="p-body">' +
+          '<div class="p-line">' +
+            '<span class="p-name">' + esc(it.name) + '</span>' +
+            '<span class="p-amt">' + won(it.amount) + '</span>' +
+          '</div>' +
+          (it.memo ? '<div class="p-memo">' + esc(it.memo) + '</div>' : '') +
+        '</div>' +
+        '<button class="p-move" type="button" data-pmove="' + esc(it.id) + '" aria-label="' +
+          (section === 'wish' ? '이번달 구매예정으로 옮기기' : '위시리스트로 옮기기') + '">' + icon('swap') + '</button>' +
+        '<span class="p-grip" data-pgrip="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
+      '</div>';
+    }
+
+    function planSectionHTML(section, key) {
+      var meta = PLAN[section];
+      var list = planList(section, key);
+      var total = planTotal(list);
+      var body = list.length
+        ? list.map(function (it, i) { return planItemHTML(it, section, i); }).join('')
+        : '<div class="plan-empty">' +
+            (section === 'month' ? '이 달에 살 것을 적어 두세요' : '나중에 살 것을 모아 두세요') + '</div>';
+
+      return '<section class="plan-sec" data-sec="' + section + '">' +
+        '<div class="plan-head">' +
+          '<h2 class="plan-title">' + icon(meta.icon) + '<span>' + meta.title + '</span></h2>' +
+          '<div class="plan-right">' +
+            '<span class="plan-sum">' + (list.length ? '합계 ' + won(total) : '0원') + '</span>' +
+            '<button class="add-mini" type="button" data-plan-add="' + section + '" aria-label="' + meta.title + ' 추가">' + icon('plus') + '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="plan-list" data-plan-list="' + section + '">' + body + '</div>' +
+      '</section>';
+    }
+
     function flowHTML(groups, key) {
       var seq = { income: 0, windfall: 1, fixed: 2, monthly: 3 };
       var all = [];
@@ -1051,9 +1392,11 @@
         var isNewDay = prevDay !== null && d !== prevDay;
         prevDay = d;
         var paid = !!paidMap[it.id];
+        var wd = weekdayOf(viewYear, viewMonth, it.day);
 
         rows += '<div class="tl-row' + (paid ? ' paid' : '') + (isNewDay ? ' day-start' : '') + '" data-id="' + esc(it.id) + '" data-group="' + row.gk + '" role="button" tabindex="0">' +
-          '<div class="tl-day"><div class="tl-num">' + (it.day || '–') + '</div><div class="tl-unit">' + (it.day ? '일' : '미정') + '</div></div>' +
+          '<span class="tl-mark ' + it.type + '" aria-hidden="true"></span>' +
+          '<div class="tl-day"><div class="tl-num">' + (it.day ? it.day + '일' : '–') + '</div><div class="tl-unit">' + (it.day ? (wd ? '(' + wd + ')' : '') : '미정') + '</div></div>' +
           '<div class="tl-body">' +
             '<div class="tl-line">' +
               '<span class="tl-name">' + esc(it.name) + '</span>' +
@@ -1601,6 +1944,368 @@
     }
 
     /* =========================================================
+       7-B. 연도·월 점프
+       ========================================================= */
+    var pickerYear = null;
+
+    function renderMonthPicker() {
+      $('pickerYear').textContent = pickerYear + '년';
+      var grid = '';
+      for (var m = 0; m < 12; m++) {
+        var on = pickerYear === viewYear && m === viewMonth;
+        var isToday = pickerYear === now.getFullYear() && m === now.getMonth();
+        grid += '<button type="button" data-pick-month="' + m + '" class="' +
+          (on ? 'on' : '') + (isToday ? ' today' : '') + '">' + (m + 1) + '월</button>';
+      }
+      $('monthGrid').innerHTML = grid;
+    }
+
+    function openMonthPicker() {
+      pickerYear = viewYear;
+      renderMonthPicker();
+      $('monthBackdrop').classList.add('open');
+      document.body.classList.add('locked');
+    }
+
+    function closeMonthPicker() {
+      $('monthBackdrop').classList.remove('open');
+      document.body.classList.remove('locked');
+    }
+
+    function jumpToMonth(y, m) {
+      viewYear = y;
+      viewMonth = m;
+      render();
+    }
+
+    /* =========================================================
+       7-C. 구매예정 · 위시리스트
+       ========================================================= */
+    var ped = null;
+
+    function planItemById(id) {
+      var key = currentKey();
+      var ml = (state.purchases || {})[key] || [];
+      for (var i = 0; i < ml.length; i++) if (ml[i].id === id) return { item: ml[i], section: 'month' };
+      var wl = state.wishlist || [];
+      for (var j = 0; j < wl.length; j++) if (wl[j].id === id) return { item: wl[j], section: 'wish' };
+      return null;
+    }
+
+    function planRemoveItem(id) {
+      var key = currentKey();
+      var ml = (state.purchases || {})[key] || [];
+      for (var i = 0; i < ml.length; i++) {
+        if (ml[i].id !== id) continue;
+        var out = ml.splice(i, 1)[0];
+        if (!ml.length) delete state.purchases[key];
+        return out;
+      }
+      var wl = state.wishlist || [];
+      for (var j = 0; j < wl.length; j++) {
+        if (wl[j].id !== id) continue;
+        return wl.splice(j, 1)[0];
+      }
+      return null;
+    }
+
+    function planAppendItem(section, item) {
+      var key = currentKey();
+      if (section === 'wish') {
+        state.wishlist = (state.wishlist || []).concat([item]);
+      } else {
+        state.purchases = state.purchases || {};
+        state.purchases[key] = (state.purchases[key] || []).concat([item]);
+      }
+    }
+
+    function movePlanItem(id, section, silent) {
+      var found = planItemById(id);
+      if (!found) return;
+      var target = section || (found.section === 'wish' ? 'month' : 'wish');
+      if (target === found.section) return;
+      var removed = planRemoveItem(id);
+      if (!removed) return;
+      planAppendItem(target, removed);
+      saveState();
+      render();
+      if (!silent) toast(target === 'wish' ? '위시리스트로 옮겼어요' : '이번달 구매예정으로 옮겼어요');
+    }
+
+    function openPlanEditor(opts) {
+      var found = opts.mode === 'edit' ? planItemById(opts.id) : null;
+      if (opts.mode === 'edit' && !found) return;
+      ped = {
+        mode: opts.mode,
+        section: opts.section || (found ? found.section : 'month'),
+        id: opts.id || null
+      };
+      $('planTitle').textContent = ped.mode === 'add' ? PLAN[ped.section].title + ' 추가' : '구매 항목 수정';
+      $('pName').value = found ? found.item.name : '';
+      $('pAmount').value = found && found.item.amount ? num(found.item.amount) : '';
+      $('pMemo').value = found ? found.item.memo : '';
+      $('planDelete').style.display = ped.mode === 'edit' ? '' : 'none';
+      $('planActions').className = 'sheet-actions' + (ped.mode === 'edit' ? ' with-delete' : '');
+      updatePlanScopeUI();
+      $('planBackdrop').classList.add('open');
+      document.body.classList.add('locked');
+      setTimeout(function () {
+        try { $('pName').focus(); } catch (e) {}
+      }, 120);
+    }
+
+    function updatePlanScopeUI() {
+      if (!ped) return;
+      Array.prototype.forEach.call($('planScopeSeg').querySelectorAll('button'), function (b) {
+        b.classList.toggle('active', b.dataset.planScope === ped.section);
+      });
+      $('planScopeHint').textContent = ped.section === 'month'
+        ? '이번 달(' + (viewMonth + 1) + '월)에만 보여요.'
+        : '어느 달에서나 계속 보여요.';
+    }
+
+    function closePlanEditor() {
+      $('planBackdrop').classList.remove('open');
+      document.body.classList.remove('locked');
+      ped = null;
+    }
+
+    function savePlanEditor() {
+      if (!ped) return;
+      var name = $('pName').value.trim();
+      var amount = readAmount('pAmount');
+      var memo = $('pMemo').value.trim();
+      if (!name) { toast('이름을 입력해 주세요'); try { $('pName').focus(); } catch (e) {} return; }
+      var section = ped.section;
+
+      if (ped.mode === 'add') {
+        planAppendItem(section, { id: uid(), name: name, amount: amount, memo: memo });
+      } else {
+        var found = planItemById(ped.id);
+        if (!found) { closePlanEditor(); return; }
+        found.item.name = name;
+        found.item.amount = amount;
+        found.item.memo = memo;
+        if (found.section !== section) movePlanItem(ped.id, section, true);
+      }
+      saveState();
+      closePlanEditor();
+      render();
+      toast('저장했어요');
+    }
+
+    function deletePlanItem() {
+      if (!ped || ped.mode !== 'edit') return;
+      var found = planItemById(ped.id);
+      if (!found) { closePlanEditor(); return; }
+      if (!window.confirm('"' + found.item.name + '"을(를) 삭제할까요?')) return;
+      planRemoveItem(ped.id);
+      saveState();
+      closePlanEditor();
+      render();
+      toast('삭제했어요');
+    }
+
+    /* --- 구매예정 ↔ 위시리스트 드래그 --- */
+    var pdrag = null;
+
+    function planListUnder(clientY) {
+      var lists = el.planWrap.querySelectorAll('.plan-list');
+      var best = null;
+      var bestDist = Infinity;
+      for (var i = 0; i < lists.length; i++) {
+        var r = lists[i].getBoundingClientRect();
+        if (clientY >= r.top - 14 && clientY <= r.bottom + 14) return lists[i];
+        var dist = Math.abs(clientY - (r.top + r.bottom) / 2);
+        if (dist < bestDist) { bestDist = dist; best = lists[i]; }
+      }
+      return best;
+    }
+
+    function planAfterElement(list, y, dragged) {
+      var els = Array.prototype.slice.call(list.querySelectorAll('.pitem')).filter(function (x) { return x !== dragged; });
+      for (var i = 0; i < els.length; i++) {
+        var r = els[i].getBoundingClientRect();
+        if (y < r.top + r.height / 2) return els[i];
+      }
+      return null;
+    }
+
+    function startPlanDrag(item, clientY, pointerId, captureEl) {
+      pdrag = {
+        item: item,
+        startY: clientY,
+        pointerId: pointerId,
+        moved: false,
+        from: item.dataset.sec
+      };
+      item.classList.add('dragging');
+      if (captureEl && captureEl.setPointerCapture) {
+        try { captureEl.setPointerCapture(pointerId); } catch (e) {}
+      }
+    }
+
+    function movePlanDrag(clientY) {
+      if (!pdrag) return;
+      if (Math.abs(clientY - pdrag.startY) > 4) pdrag.moved = true;
+      if (!pdrag.moved) return;
+      var list = planListUnder(clientY);
+      if (!list) return;
+      Array.prototype.forEach.call(el.planWrap.querySelectorAll('.plan-list'), function (l) {
+        l.classList.toggle('drop-over', l === list);
+      });
+      if (pdrag.item.parentElement !== list) list.appendChild(pdrag.item);
+      var after = planAfterElement(list, clientY, pdrag.item);
+      if (after) list.insertBefore(pdrag.item, after);
+      else list.appendChild(pdrag.item);
+    }
+
+    function endPlanDrag() {
+      if (!pdrag) return;
+      var d = pdrag;
+      pdrag = null;
+      d.item.classList.remove('dragging');
+      Array.prototype.forEach.call(el.planWrap.querySelectorAll('.plan-list'), function (l) {
+        l.classList.remove('drop-over');
+      });
+      if (!d.moved) return;
+
+      var parentList = d.item.closest ? d.item.closest('.plan-list') : d.item.parentElement;
+      var target = parentList ? parentList.dataset.planList : d.from;
+      var idsOf = function (sec) {
+        var l = el.planWrap.querySelector('[data-plan-list="' + sec + '"]');
+        if (!l) return [];
+        return Array.prototype.slice.call(l.querySelectorAll('.pitem')).map(function (x) { return x.dataset.pid; });
+      };
+      var monthIds = idsOf('month');
+      var wishIds = idsOf('wish');
+
+      var key = currentKey();
+      var map = {};
+      ((state.purchases || {})[key] || []).concat(state.wishlist || []).forEach(function (it) { map[it.id] = it; });
+      var monthList = monthIds.map(function (id) { return map[id]; }).filter(Boolean);
+      var wishList = wishIds.map(function (id) { return map[id]; }).filter(Boolean);
+      ((state.purchases || {})[key] || []).forEach(function (it) {
+        if (monthIds.indexOf(it.id) < 0 && wishIds.indexOf(it.id) < 0) monthList.push(it);
+      });
+      (state.wishlist || []).forEach(function (it) {
+        if (monthIds.indexOf(it.id) < 0 && wishIds.indexOf(it.id) < 0) wishList.push(it);
+      });
+      if (monthList.length) state.purchases[key] = monthList;
+      else delete state.purchases[key];
+      state.wishlist = wishList;
+
+      saveState();
+      render();
+      if (target !== d.from) {
+        toast(target === 'wish' ? '위시리스트로 옮겼어요' : '이번달 구매예정으로 옮겼어요');
+      }
+    }
+
+    function bindPlanPointer() {
+      el.planWrap.addEventListener('pointerdown', function (e) {
+        var handle = e.target.closest('[data-pgrip]');
+        if (!handle) return;
+        var item = handle.closest('.pitem');
+        if (!item) return;
+        e.preventDefault();
+        startPlanDrag(item, e.clientY, e.pointerId, handle);
+      }, { passive: false });
+
+      document.addEventListener('pointermove', function (e) {
+        if (!pdrag || e.pointerId !== pdrag.pointerId) return;
+        if (e.cancelable) e.preventDefault();
+        movePlanDrag(e.clientY);
+      }, { passive: false });
+
+      document.addEventListener('pointerup', function (e) {
+        if (!pdrag || e.pointerId !== pdrag.pointerId) return;
+        endPlanDrag();
+      });
+      document.addEventListener('pointercancel', function (e) {
+        if (!pdrag || e.pointerId !== pdrag.pointerId) return;
+        endPlanDrag();
+      });
+
+      if (!window.PointerEvent) {
+        var touchId = null;
+        el.planWrap.addEventListener('touchstart', function (e) {
+          var handle = e.target.closest('[data-pgrip]');
+          if (!handle) return;
+          var item = handle.closest('.pitem');
+          if (!item) return;
+          var t = e.changedTouches[0];
+          touchId = t.identifier;
+          startPlanDrag(item, t.clientY, 'touch', null);
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function (e) {
+          if (!pdrag || pdrag.pointerId !== 'touch') return;
+          for (var i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === touchId) {
+              if (e.cancelable) e.preventDefault();
+              movePlanDrag(e.changedTouches[i].clientY);
+              break;
+            }
+          }
+        }, { passive: false });
+
+        document.addEventListener('touchend', function () {
+          if (!pdrag || pdrag.pointerId !== 'touch') return;
+          endPlanDrag();
+          touchId = null;
+        });
+      }
+    }
+
+    /* =========================================================
+       7-D. 데이터 내보내기 · 불러오기
+       ========================================================= */
+    function exportData() {
+      var json = JSON.stringify(state);
+      var area = $('dataArea');
+      area.value = json;
+      try { area.focus(); area.select(); } catch (e) {}
+      var done = function () { toast('복사했어요. 다른 곳에 붙여넣으세요'); };
+      var fail = function () { toast('아래 칸의 내용을 길게 눌러 복사하세요'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(json).then(done, function () {
+          try {
+            if (document.execCommand('copy')) done(); else fail();
+          } catch (e) { fail(); }
+        });
+      } else {
+        try {
+          if (document.execCommand('copy')) done(); else fail();
+        } catch (e) { fail(); }
+      }
+    }
+
+    function importData() {
+      var raw = $('dataArea').value.trim();
+      if (!raw) { toast('붙여넣은 내용이 없어요'); return; }
+      var parsed = null;
+      try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        toast('데이터 형식이 아니에요');
+        return;
+      }
+      var ours = ['recurring', 'oneOff', 'overrides', 'purchases', 'wishlist', 'startBal', 'order', 'theme', 'view']
+        .some(function (k) { return Object.prototype.hasOwnProperty.call(parsed, k); });
+      if (!ours) { toast('머니플랜 데이터가 아니에요'); return; }
+
+      var next = normalizeState(parsed);
+      var stock = next.recurring.length + (next.wishlist || []).length;
+      Object.keys(next.purchases || {}).forEach(function (k) { stock += next.purchases[k].length; });
+      if (!window.confirm('지금 내용을 붙여넣은 데이터로 바꿀까요?\n(기존 내용은 덮어써져요 · 항목 ' + stock + '개)')) return;
+
+      state = next;
+      saveState();
+      render();
+      toast('불러왔어요');
+    }
+
+    /* =========================================================
        8. 이벤트 연결
        ========================================================= */
     function bindEvents() {
@@ -1613,6 +2318,39 @@
         viewMonth++;
         if (viewMonth > 11) { viewMonth = 0; viewYear++; }
         render();
+      });
+
+      // 연도·월 점프
+      el.monthLabelBtn.addEventListener('click', openMonthPicker);
+      $('monthPickClose').addEventListener('click', closeMonthPicker);
+      $('monthBackdrop').addEventListener('click', function (e) {
+        if (e.target === this) closeMonthPicker();
+      });
+      $('prevYear').addEventListener('click', function () {
+        pickerYear--;
+        renderMonthPicker();
+      });
+      $('nextYear').addEventListener('click', function () {
+        pickerYear++;
+        renderMonthPicker();
+      });
+      $('monthGrid').addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-pick-month]');
+        if (!b) return;
+        jumpToMonth(pickerYear, Number(b.dataset.pickMonth));
+        closeMonthPicker();
+        toast(pickerYear + '년 ' + (Number(b.dataset.pickMonth) + 1) + '월로 이동했어요');
+      });
+      document.querySelector('.quick-row').addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-jump]');
+        if (!b) return;
+        if (b.dataset.jump === 'this') {
+          jumpToMonth(now.getFullYear(), now.getMonth());
+        } else {
+          var idx = now.getFullYear() * 12 + now.getMonth() + 1;
+          jumpToMonth(Math.floor(idx / 12), idx % 12);
+        }
+        closeMonthPicker();
       });
 
       el.viewSeg.addEventListener('click', function (e) {
@@ -1653,6 +2391,52 @@
         var row = e.target.closest('.tl-row');
         if (row) openEditor({ mode: 'edit', id: row.dataset.id, group: row.dataset.group });
       });
+
+      // 구매예정 · 위시리스트
+      el.planWrap.addEventListener('click', function (e) {
+        var add = e.target.closest('[data-plan-add]');
+        if (add) { openPlanEditor({ mode: 'add', section: add.dataset.planAdd }); return; }
+        var mv = e.target.closest('[data-pmove]');
+        if (mv) {
+          e.stopPropagation();
+          movePlanItem(mv.dataset.pmove);
+          return;
+        }
+        if (e.target.closest('[data-pgrip]')) return;
+        var item = e.target.closest('.pitem');
+        if (item) openPlanEditor({ mode: 'edit', id: item.dataset.pid });
+      });
+
+      el.planWrap.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var item = e.target.closest('.pitem');
+        if (!item) return;
+        e.preventDefault();
+        openPlanEditor({ mode: 'edit', id: item.dataset.pid });
+      });
+
+      $('planClose').addEventListener('click', closePlanEditor);
+      $('planCancel').addEventListener('click', closePlanEditor);
+      $('planSave').addEventListener('click', savePlanEditor);
+      $('planDelete').addEventListener('click', deletePlanItem);
+      $('planBackdrop').addEventListener('click', function (e) {
+        if (e.target === this) closePlanEditor();
+      });
+      $('planScopeSeg').addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-plan-scope]');
+        if (!b || !ped) return;
+        ped.section = b.dataset.planScope;
+        if (ped.mode === 'add') $('planTitle').textContent = PLAN[ped.section].title + ' 추가';
+        updatePlanScopeUI();
+      });
+      $('pAmount').addEventListener('input', function () {
+        var d = this.value.replace(/[^\d]/g, '');
+        this.value = d ? nf.format(Number(d.slice(0, 12))) : '';
+      });
+
+      // 데이터 내보내기·불러오기
+      $('exportBtn').addEventListener('click', exportData);
+      $('importBtn').addEventListener('click', importData);
 
       el.flowRoot.addEventListener('input', function (e) {
         if (!e.target || e.target.id !== 'fStartBal') return;
@@ -1768,10 +2552,13 @@
       document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
         if ($('sheetBackdrop').classList.contains('open')) closeEditor();
+        else if ($('planBackdrop').classList.contains('open')) closePlanEditor();
+        else if ($('monthBackdrop').classList.contains('open')) closeMonthPicker();
         else if ($('themeBackdrop').classList.contains('open')) closeTheme();
       });
 
       bindPointer();
+      bindPlanPointer();
     }
 
     /* =========================================================
