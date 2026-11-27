@@ -1213,14 +1213,14 @@
     }
 
     function prevMonthKey(key) {
-      var p = parseKey(key);
-      var y = p.y, m = p.m - 1;
+      var parts = key.split('-');
+      var y = Number(parts[0]), m = Number(parts[1]) - 2;
       if (m < 0) { y -= 1; m = 11; }
-      return ymKey(y, m);
+      return monthKey(y, m);
     }
 
     function getCarryAnchorKey() {
-      var todayKey = ymKey(now.getFullYear(), now.getMonth());
+      var todayKey = monthKey(now.getFullYear(), now.getMonth());
       var anchor = todayKey;
       var pools = [state.oneOff || {}, state.overrides || {}, state.startBal || {}];
       pools.forEach(function (obj) {
