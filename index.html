@@ -975,6 +975,7 @@
 
     var CATS_FIXED = ['주거·관리', '통신', '구독', '교통', '할부', '이자', '원금', '저축·적금', '기타'];
     var CATS_MONTHLY = ['경조사비', '신용카드', '쇼핑', '식비·모임', '의료·미용', '기타'];
+    var CATS_WINDFALL = ['당근', '용돈', '기타'];
 
     var GROUPS = {
       income:   { title: '들어올 돈', type: 'income',  rec: true  },
@@ -1103,7 +1104,9 @@
 
     /* --- 저장 데이터 정규화(마이그레이션) --- */
     function normCategory(type, cat) {
-      if (type === 'income') return '수입';
+      if (type === 'income') {
+        return CATS_WINDFALL.indexOf(cat) >= 0 ? cat : '수입';
+      }
       if (cat === '통신·구독') return '구독';
       if (cat === '교통·생활') return '교통';
       if (CATS_FIXED.indexOf(cat) >= 0 || CATS_MONTHLY.indexOf(cat) >= 0) return cat;
@@ -1492,7 +1495,7 @@
       var paid = !!(state.paid[currentKey()] || {})[it.id];
       var isPriv = !!it.isPrivate;
       var locked = !!(isPriv && !revealedIds[it.id]);
-      var catBadge = (!locked && it.type === 'expense' && it.category) ? '<span class="i-cat">' + esc(it.category) + '</span>' : '';
+      var catBadge = (!locked && it.category && (it.type === 'expense' || (group === 'windfall' && it.category !== '수입'))) ? '<span class="i-cat">' + esc(it.category) + '</span>' : '';
       var nameHtml = locked ? '<span class="lock-name">' + icon('lock', 12) + '비공개</span>' : (esc(it.name) + catBadge);
       var metaHtml = locked ? '눌러서 확인' : esc(itemMeta(it));
       var privEditBtn = (isPriv && !locked) ? '<button class="priv-edit" type="button" data-priv-edit="1" aria-label="수정">' + privEditSvg + '</button>' : '';
@@ -1807,13 +1810,13 @@
     function updateCategoryOptions(preferred) {
       var catField = $('catField');
       var select = $('fCategory');
-      if (ed.type === 'income') {
+      if (ed.type === 'income' && ed.group !== 'windfall') {
         catField.style.display = 'none';
         select.innerHTML = '<option value="수입">수입</option>';
         return;
       }
       catField.style.display = 'block';
-      var list = isRecurringNow() ? CATS_FIXED : CATS_MONTHLY;
+      var list = ed.type === 'income' ? CATS_WINDFALL : (isRecurringNow() ? CATS_FIXED : CATS_MONTHLY);
       var want = preferred != null ? preferred : (ed.initialCategory != null ? ed.initialCategory : select.value);
       ed.initialCategory = null;
       select.innerHTML = list.map(function (c) {
