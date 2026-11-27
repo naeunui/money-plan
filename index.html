@@ -377,9 +377,10 @@
     .start-input span { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); pointer-events: none; }
     .tl { margin-top: 16px; }
     .tl-row {
-      display: flex; gap: 11px; padding: 12px 0; border-top: 1px solid var(--line);
+      display: flex; align-items: flex-start; gap: 9px; padding: 11px 0; border-top: 1px solid var(--line);
       cursor: pointer;
     }
+    .tl-row .chk { margin-top: 4px; }
     .tl-mark {
       width: 5px; height: 22px; border-radius: 3px; flex: none; margin-top: 2px;
       background: var(--line-strong);
@@ -1570,6 +1571,7 @@
         var isPriv = !!it.isPrivate;
         var locked = !!(isPriv && !revealedIds[it.id]);
         rows += '<div class="tl-row' + (paid ? ' paid' : '') + (isNewDay ? ' day-start' : '') + '" data-id="' + esc(it.id) + '" data-group="' + row.gk + '"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
+          '<button class="chk' + (paid ? ' on' : '') + '" type="button" data-check="' + esc(it.id) + '" aria-label="' + (paid ? '완료 취소' : '완료 표시') + '" aria-pressed="' + (paid ? 'true' : 'false') + '">' + icon('check') + '</button>' +
           '<span class="tl-mark ' + it.type + '" aria-hidden="true"></span>' +
           '<div class="tl-day"><div class="tl-num">' + (it.day ? it.day + '일' : '–') + '</div><div class="tl-unit">' + (it.day ? (wd ? '(' + wd + ')' : '') : '미정') + '</div></div>' +
           '<div class="tl-body">' +
@@ -2666,6 +2668,12 @@
       });
 
       el.flowRoot.addEventListener('click', function (e) {
+        var chk = e.target.closest('[data-check]');
+        if (chk) {
+          e.stopPropagation();
+          togglePaid(chk.dataset.check);
+          return;
+        }
         var row = e.target.closest('.tl-row');
         if (row) {
           if (row.dataset.private === '1') {
