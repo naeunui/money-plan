@@ -279,18 +279,21 @@
       box-shadow: 0 14px 30px rgba(0,0,0,.2); position: relative; z-index: 25;
       transition: none; pointer-events: none;
     }
-    .card[data-group="fixed"] .item-list { gap: 4px; }
-    .card[data-group="fixed"] .item { padding: 5px 8px 6px; border-radius: 10px; }
-    .card[data-group="fixed"] .i-name { font-size: 13px; }
-    .card[data-group="fixed"] .i-sub {
-      display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
-      margin-top: 2px;
+    .card[data-group="fixed"] .item-list {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5px; align-content: start;
     }
-    .card[data-group="fixed"] .i-amt { margin-top: 0; font-size: 13.5px; }
-    .card[data-group="fixed"] .i-meta {
-      margin-top: 0; font-size: 11px; text-align: right;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .card[data-group="fixed"] .item { padding: 7px 6px 8px; border-radius: 10px; min-width: 0; }
+    .card[data-group="fixed"] .i-top { gap: 3px; }
+    .card[data-group="fixed"] .chk { width: 15px; height: 15px; border-radius: 4px; }
+    .card[data-group="fixed"] .chk svg { width: 9px; height: 9px; }
+    .card[data-group="fixed"] .i-name { font-size: 11.5px; }
+    .card[data-group="fixed"] .i-cat { font-size: 9px; padding: 1px 4px; margin-left: 3px; }
+    .card[data-group="fixed"] .i-grip { width: 14px; height: 16px; }
+    .card[data-group="fixed"] .i-grip svg { width: 10px; height: 13px; }
+    .card[data-group="fixed"] .i-amt { font-size: 12.5px; margin-top: 3px; }
+    .card[data-group="fixed"] .i-meta { font-size: 10.5px; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card[data-group="fixed"] .more-btn,
+    .card[data-group="fixed"] .empty { grid-column: 1 / -1; }
     .i-top { display: flex; align-items: center; gap: 6px; }
     .chk {
       width: 20px; height: 20px; flex: none; padding: 0; border-radius: 6px;
@@ -2009,8 +2012,19 @@
     var drag = null;
     var suppressClickUntil = 0;
 
-    function afterElement(container, y, dragged) {
+    function afterElement(container, x, y, dragged) {
       var els = Array.prototype.slice.call(container.querySelectorAll('.item'));
+      var isGrid = container.dataset.list === 'fixed';
+      if (isGrid) {
+        for (var i = 0; i < els.length; i++) {
+          var el = els[i];
+          if (el === dragged) continue;
+          var r = el.getBoundingClientRect();
+          if (y < r.top) return el;
+          if (y <= r.bottom && x < r.left + r.width / 2) return el;
+        }
+        return null;
+      }
       var best = null;
       var bestOffset = -Infinity;
       els.forEach(function (el) {
@@ -2025,16 +2039,18 @@
       return best;
     }
 
-    function floatFollow(el, clientY) {
+    function floatFollow(el, clientX, clientY, trackX) {
       el.style.transform = '';
       var r = el.getBoundingClientRect();
+      var dx = trackX ? (clientX - (r.left + r.width / 2)) : 0;
       var dy = clientY - (r.top + r.height / 2);
-      el.style.transform = 'translate3d(0,' + dy.toFixed(1) + 'px,0) scale(1.03)';
+      el.style.transform = 'translate3d(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px,0) scale(1.03)';
     }
 
-    function startDrag(item, clientY, pointerId, captureEl) {
+    function startDrag(item, clientX, clientY, pointerId, captureEl) {
       drag = {
         item: item,
+        startX: clientX,
         startY: clientY,
         pointerId: pointerId,
         moved: false,
@@ -2048,13 +2064,18 @@
       }
     }
 
-    function moveDrag(clientY) {
+    function moveDrag(clientX, clientY) {
       if (!drag) return;
-      if (Math.abs(clientY - drag.startY) > 3) drag.moved = true;
-      var after = afterElement(drag.container, clientY, drag.item);
-      if (after === null) drag.container.appendChild(drag.item);
-      else if (after !== drag.item) drag.container.insertBefore(drag.item, after);
-      floatFollow(drag.item, clientY);
+      if (Math.hypot(clientX - drag.startX, clientY - drag.startY) > 3) drag.moved = true;
+      var after = afterElement(drag.container, clientX, clientY, drag.item);
+      var more = drag.container.querySelector('.more-btn');
+      if (after === null) {
+        if (more) drag.container.insertBefore(drag.item, more);
+        else drag.container.appendChild(drag.item);
+      } else if (after !== drag.item) {
+        drag.container.insertBefore(drag.item, after);
+      }
+      floatFollow(drag.item, clientX, clientY, drag.group === 'fixed');
     }
 
     function endDrag() {
@@ -2095,7 +2116,7 @@
           var hItem = handle.closest('.item');
           if (!hItem) return;
           e.preventDefault();
-          startDrag(hItem, e.clientY, e.pointerId, handle);
+          startDrag(hItem, e.clientX, e.clientY, e.pointerId, handle);
           return;
         }
         if (e.target.closest('[data-check]') || e.target.closest('[data-priv-edit]')) return;
@@ -2109,7 +2130,7 @@
           y: sy,
           timer: setTimeout(function () {
             hold = null;
-            startDrag(item, sy, pid, item);
+            startDrag(item, sx, sy, pid, item);
           }, 230)
         };
       }, { passive: false });
@@ -2120,7 +2141,7 @@
         }
         if (!drag || e.pointerId !== drag.pointerId) return;
         if (e.cancelable) e.preventDefault();
-        moveDrag(e.clientY);
+        moveDrag(e.clientX, e.clientY);
       }, { passive: false });
 
       document.addEventListener('pointerup', function (e) {
@@ -2144,14 +2165,14 @@
           var item = handle.closest('.item');
           if (!item) return;
           touchId = t.identifier;
-          startDrag(item, t.clientY, 'touch', null);
+          startDrag(item, t.clientX, t.clientY, 'touch', null);
         }, { passive: true });
 
         document.addEventListener('touchmove', function (e) {
           if (!drag || drag.pointerId !== 'touch') return;
           for (var i = 0; i < e.changedTouches.length; i++) {
             if (e.changedTouches[i].identifier === touchId) {
-              moveDrag(e.changedTouches[i].clientY);
+              moveDrag(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
               if (e.cancelable) e.preventDefault();
               break;
             }
@@ -2384,7 +2405,7 @@
       var after = planAfterElement(list, clientY, pdrag.item);
       if (after) list.insertBefore(pdrag.item, after);
       else list.appendChild(pdrag.item);
-      floatFollow(pdrag.item, clientY);
+      floatFollow(pdrag.item, 0, clientY, false);
     }
 
     function endPlanDrag() {
