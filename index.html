@@ -1510,7 +1510,7 @@
       if (!hint) return;
       var info = getStartBalance(currentKey());
       if (!state.carryDebt) {
-        hint.textContent = '껍 두면 전달 마이너스는 이번 달 계산에 넣지 않아요.';
+        hint.textContent = '끄면 전달 마이너스는 이번 달 계산에 넣지 않아요.';
       } else if (info && info.debt > 0) {
         hint.textContent = '이번 달은 전달 부족분 ' + won(info.debt) + '이 이번달 지출 맨 위에 들어가 있어요.';
       } else {
