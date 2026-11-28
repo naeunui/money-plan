@@ -35,8 +35,10 @@
       --sum-fg: #2A1A20;
       --sum-muted: #7A5A64;
       --sum-line: #EFC9D4;
-      --sum-in: #A62F55;
-      --sum-out: #4B3A40;
+      --sum-in: #3568C8;
+      --sum-out: #CC3A52;
+      --amt-in: #3E77D6;
+      --amt-out: #D8415E;
       --set-a-bg: #FFF7F9;
       --set-a-line: #F6D9E1;
       --set-a-point: #C2466D;
@@ -69,8 +71,10 @@
       --sum-fg: #FFFFFF;
       --sum-muted: #A8A8A8;
       --sum-line: #2C2C2C;
-      --sum-in: #FFFFFF;
-      --sum-out: #D6D6D6;
+      --sum-in: #7BA4D8;
+      --sum-out: #D87A7E;
+      --amt-in: #3B6998;
+      --amt-out: #B84B52;
       --set-a-bg: #E9E9E9;
       --set-a-line: #D3D3D3;
       --set-a-point: #0B0B0B;
@@ -102,8 +106,10 @@
       --sum-fg: #F5F5F6;
       --sum-muted: #93939D;
       --sum-line: #2C2C33;
-      --sum-in: #FFFFFF;
-      --sum-out: #C4C4CD;
+      --sum-in: #7BA4D8;
+      --sum-out: #D87A7E;
+      --amt-in: #7BA4D8;
+      --amt-out: #D87A7E;
       --set-a-bg: #1A1418;
       --set-a-line: #34232B;
       --set-a-point: #EFA8BD;
@@ -262,8 +268,8 @@
       font-variant-numeric: tabular-nums; white-space: nowrap;
       overflow: hidden; text-overflow: ellipsis;
     }
-    .card-sum.in { color: var(--in); }
-    .card-sum.out { color: var(--out); }
+    .card-sum.in { color: var(--amt-in); }
+    .card-sum.out { color: var(--amt-out); }
     .card-sum.zero { color: var(--muted); }
 
     .item-list { display: flex; flex-direction: column; gap: 6px; flex: 1; }
