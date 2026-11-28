@@ -454,16 +454,18 @@
     .plan-sum { font-size: 13px; font-weight: 800; color: var(--accent-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
     .plan-hint { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
     .plan-list {
-      display: flex; flex-direction: column; gap: 6px; margin-top: 8px;
-      border-radius: 12px; padding: 2px; min-height: 30px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;
+      border-radius: 12px; padding: 2px; min-height: 30px; align-content: start;
       transition: background .15s ease, box-shadow .15s ease;
     }
     .plan-list.drop-over { background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent); }
+    .plan-list > .plan-empty,
+    .plan-list > .more-btn { grid-column: 1 / -1; }
     .plan-empty { font-size: 12.5px; color: var(--muted); padding: 8px 4px; line-height: 1.4; }
     .pitem {
-      display: flex; align-items: center; gap: 7px;
+      display: block; min-width: 0;
       background: var(--card-2); border: 1px solid transparent; border-radius: 12px;
-      padding: 9px 9px 9px 6px; cursor: pointer;
+      padding: 8px 7px 9px; cursor: pointer;
       -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
       transition: background .15s ease, border-color .15s ease, opacity .15s ease;
     }
@@ -472,30 +474,40 @@
       box-shadow: 0 14px 30px rgba(0,0,0,.2); position: relative; z-index: 25;
       transition: none; pointer-events: none;
     }
+    .p-top { display: flex; align-items: center; gap: 4px; }
     .p-rank {
-      width: 24px; flex: none; text-align: right;
-      font-size: 13.5px; font-weight: 800; color: var(--accent-ink); font-variant-numeric: tabular-nums;
+      flex: none; font-size: 12px; font-weight: 800; color: var(--accent-ink);
+      font-variant-numeric: tabular-nums;
     }
-    .p-body { flex: 1; min-width: 0; }
-    .p-line { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-    .p-name { font-size: 14.5px; font-weight: 700; letter-spacing: -.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .p-amt { font-size: 14.5px; font-weight: 800; color: var(--accent-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .p-memo { font-size: 12.5px; color: var(--muted); line-height: 1.4; margin-top: 3px; word-break: keep-all; }
+    .p-name {
+      flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; letter-spacing: -.2px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .p-sub { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-top: 4px; }
+    .p-amt {
+      font-size: 13.5px; font-weight: 800; color: var(--accent-ink);
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .p-memo {
+      font-size: 11.5px; color: var(--muted); line-height: 1.35; margin-top: 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
     .p-move {
-      width: 32px; height: 32px; flex: none; border-radius: 10px;
+      width: 24px; height: 24px; flex: none; border-radius: 8px;
       border: 1px solid var(--line-strong); background: var(--card); color: var(--muted);
       display: grid; place-items: center; cursor: pointer; padding: 0;
     }
-    .p-move svg { width: 15px; height: 15px; }
+    .p-move svg { width: 13px; height: 13px; }
     .p-grip {
-      width: 28px; height: 30px; flex: none; display: grid; place-items: center;
+      width: 22px; height: 26px; flex: none; display: grid; place-items: center;
       color: var(--muted); opacity: .75; touch-action: none; cursor: grab;
     }
-    .p-grip svg { width: 20px; height: 24px; }
-    .p-name .i-cat { font-size: 10px; padding: 1px 5px; margin-left: 4px; vertical-align: 1px; }
+    .p-grip svg { width: 17px; height: 21px; }
+    .p-name .i-cat { font-size: 9.5px; padding: 1px 4px; margin-left: 3px; vertical-align: 1px; }
     .pitem.done .p-name { text-decoration: line-through; }
     .pitem.done .p-amt { color: var(--muted); }
-    .pitem .chk { width: 21px; height: 21px; }
+    .pitem .chk { width: 20px; height: 20px; }
     .point-hint { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
     .point-count { font-size: 12.5px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
@@ -877,6 +889,18 @@
       </div>
 
       <div class="data-block">
+        <div class="sub-label">전달 이월</div>
+        <label class="switch-row">
+          <span class="sw-text">
+            <b>전달 마이너스 이월</b>
+            <small>전달에 남는 돈이 마이너스면 이번 달 지출 맨 위에 ‘전달 부족분’으로 넣어요</small>
+          </span>
+          <input type="checkbox" class="switch" id="fCarryDebt" checked />
+        </label>
+        <p class="hint-line" id="carryDebtHint" style="margin-top:2px"></p>
+      </div>
+
+      <div class="data-block">
         <div class="sub-label">데이터 옮기기</div>
         <p class="hint-line" style="margin-top:0">브라우저나 홈 화면 앱을 바꾸면 내용이 따로 저장돼요. 아래 칸에 담아 다른 곳에서 불러오면 그대로 옮길 수 있어요.</p>
         <div class="data-btns">
@@ -943,14 +967,14 @@
         </div>
       </div>
 
-      <div class="field">
-        <label for="pMemo">메모 (선택)</label>
-        <input id="pMemo" type="text" autocomplete="off" placeholder="예: 12월 세일 때" />
-      </div>
-
       <div class="field" id="planCatField">
         <label for="pCategory">분류</label>
         <select id="pCategory"></select>
+      </div>
+
+      <div class="field">
+        <label for="pMemo">메모 (선택)</label>
+        <input id="pMemo" type="text" autocomplete="off" placeholder="예: 12월 세일 때" />
       </div>
 
       <label class="switch-row">
@@ -1101,6 +1125,7 @@
         purchases: {},
         wishlist: [],
         points: {},
+        carryDebt: true,
         presets: { income: [], windfall: [], fixed: [], monthly: [] },
         theme: 'pink',
         view: 'cards'
@@ -1278,6 +1303,7 @@
 
       s.theme = THEMES[raw.theme] ? raw.theme : 'pink';
       s.view = raw.view === 'flow' ? 'flow' : 'cards';
+      s.carryDebt = raw.carryDebt === undefined || raw.carryDebt === null ? true : !!raw.carryDebt;
       return s;
     }
 
@@ -1435,21 +1461,55 @@
       if (memo[key]) return memo[key];
       var sbMap = state.startBal || {};
       if (Object.prototype.hasOwnProperty.call(sbMap, key) && sbMap[key] !== '' && sbMap[key] !== null && sbMap[key] !== undefined) {
-        memo[key] = { value: Number(sbMap[key]) || 0, manual: true };
+        memo[key] = { value: Number(sbMap[key]) || 0, manual: true, debt: 0 };
         return memo[key];
       }
       var anchor = getCarryAnchorKey();
       if (key <= anchor) {
-        memo[key] = { value: 0, manual: false };
+        memo[key] = { value: 0, manual: false, debt: 0 };
         return memo[key];
       }
       var pKey = prevMonthKey(key);
-      var prevStart = getStartBalance(pKey, memo).value;
+      var prevInfo = getStartBalance(pKey, memo);
       var pg = buildGroups(pKey);
-      var prevNet = sumOf(pg.income) + sumOf(pg.windfall) - sumOf(pg.fixed) - sumOf(pg.monthly);
-      var carry = Math.max(0, prevStart + prevNet);
-      memo[key] = { value: carry, manual: false };
+      /* 전달 달에 "전달 부족분"이 이미 들어가 있으면 그 금액도 전달 지출에 포함 */
+      var prevDebt = state.carryDebt ? (prevInfo.debt || 0) : 0;
+      var prevNet = sumOf(pg.income) + sumOf(pg.windfall) - sumOf(pg.fixed) - sumOf(pg.monthly) - prevDebt;
+      var raw = prevInfo.value + prevNet;
+      var debt = raw < 0 ? -raw : 0;
+      memo[key] = { value: Math.max(0, raw), manual: false, debt: debt };
       return memo[key];
+    }
+
+    /* 전달 부족분: 지난달 최종 남는 돈이 마이너스일 때 이번달 지출 맨 위에 넣는 항목 */
+    function carryDebtItem(info, key) {
+      if (!state.carryDebt || !info || !(info.debt > 0)) return null;
+      return {
+        id: 'carry_debt',
+        type: 'expense',
+        name: '전달 부족분',
+        amount: info.debt,
+        day: null,
+        category: '이월',
+        isPrivate: false,
+        carryDebt: true,
+        recurring: false,
+        overridden: false,
+        inst: null
+      };
+    }
+
+    function updateCarryDebtHint() {
+      var hint = $('carryDebtHint');
+      if (!hint) return;
+      var info = getStartBalance(currentKey());
+      if (!state.carryDebt) {
+        hint.textContent = '껍 두면 전달 마이너스는 이번 달 계산에 넣지 않아요.';
+      } else if (info && info.debt > 0) {
+        hint.textContent = '이번 달은 전달 부족분 ' + won(info.debt) + '이 이번달 지출 맨 위에 들어가 있어요.';
+      } else {
+        hint.textContent = '이번 달은 전달 부족분이 없어요.';
+      }
     }
 
     function render() {
@@ -1471,6 +1531,8 @@
 
       var carryInfo = getStartBalance(key);
       var groups = buildGroups(key);
+      var debtItem = carryDebtItem(carryInfo, key);
+      if (debtItem) groups.monthly.unshift(debtItem);
       var totalIn = sumOf(groups.income) + sumOf(groups.windfall);
       var totalOut = sumOf(groups.fixed) + sumOf(groups.monthly);
       var net = carryInfo.value + totalIn - totalOut;
@@ -1578,23 +1640,27 @@
       var locked = !!(isPriv && !revealedIds[it.id]);
       var catBadge = (!locked && it.category && (it.type === 'expense' || (group === 'windfall' && it.category !== '수입'))) ? '<span class="i-cat">' + esc(it.category) + '</span>' : '';
       var nameHtml = locked ? '<span class="lock-name">' + icon('lock', 12) + '비공개</span>' : (esc(it.name) + catBadge);
-      var metaHtml = locked ? '눌러서 확인' : esc(itemMeta(it));
+      var metaHtml = it.carryDebt ? '설정에서 조절' : (locked ? '눌러서 확인' : esc(itemMeta(it)));
       var privEditBtn = (isPriv && !locked) ? '<button class="priv-edit" type="button" data-priv-edit="1" aria-label="수정">' + privEditSvg + '</button>' : '';
       var deferred = isDeferredItem(it);
       var amtHtml = '<div class="i-amt ' + (deferred ? 'deferred' : it.type) + '">' + (deferred ? '→ ' : '') + signedWon(it.amount, it.type) + '</div>';
-      return '<div class="swipe-wrap">' +
-        '<div class="item' + (paid ? ' paid' : '') + '" data-id="' + esc(it.id) + '" data-group="' + group + '"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
-          '<div class="i-top">' +
+      var inner = '<div class="i-top">' +
             '<button class="chk' + (paid ? ' on' : '') + '" type="button" data-check="' + esc(it.id) + '" aria-label="' + (paid ? '완료 취소' : '완료 표시') + '" aria-pressed="' + (paid ? 'true' : 'false') + '">' + icon('check') + '</button>' +
             '<span class="i-name">' + nameHtml + '</span>' +
             privEditBtn +
-            '<span class="i-grip" data-handle="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
+            (it.carryDebt ? '' : '<span class="i-grip" data-handle="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>') +
           '</div>' +
           '<div class="i-sub">' +
             amtHtml +
             '<div class="i-meta">' + metaHtml + '</div>' +
-          '</div>' +
-        '</div>' +
+          '</div>';
+      var attrs = ' data-id="' + esc(it.id) + '" data-group="' + group + '"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + (it.carryDebt ? ' data-carry="1"' : '');
+
+      if (it.carryDebt) {
+        return '<div class="item carry-item' + (paid ? ' paid' : '') + '"' + attrs + ' role="button" tabindex="0">' + inner + '</div>';
+      }
+      return '<div class="swipe-wrap">' +
+        '<div class="item' + (paid ? ' paid' : '') + '"' + attrs + ' role="button" tabindex="0">' + inner + '</div>' +
         '<button class="swipe-del" type="button" data-del="' + esc(it.id) + '" aria-label="삭제">' + trashSvg + '</button>' +
       '</div>';
     }
@@ -1617,18 +1683,18 @@
       var privEditBtn = (isPriv && !locked) ? '<button class="priv-edit" type="button" data-priv-edit="1" aria-label="수정">' + privEditSvg + '</button>' : '';
       return '<div class="swipe-wrap">' +
         '<div class="pitem" data-pid="' + esc(it.id) + '" data-sec="' + section + '"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
-          '<span class="p-rank">' + (i + 1) + '.</span>' +
-          '<div class="p-body">' +
-            '<div class="p-line">' +
-              '<span class="p-name">' + nameHtml + '</span>' +
-              '<span class="p-amt">' + won(it.amount) + '</span>' +
-            '</div>' +
-            memoHtml +
+          '<div class="p-top">' +
+            '<span class="p-rank">' + (i + 1) + '.</span>' +
+            '<span class="p-name">' + nameHtml + '</span>' +
+            privEditBtn +
+            '<span class="p-grip" data-pgrip="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
           '</div>' +
-          privEditBtn +
-          '<button class="p-move" type="button" data-pmove="' + esc(it.id) + '" aria-label="' +
-            (section === 'wish' ? '이번달 구매예정으로 옮기기' : '위시리스트로 옮기기') + '">' + icon('swap') + '</button>' +
-          '<span class="p-grip" data-pgrip="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
+          '<div class="p-sub">' +
+            '<span class="p-amt">' + won(it.amount) + '</span>' +
+            '<button class="p-move" type="button" data-pmove="' + esc(it.id) + '" aria-label="' +
+              (section === 'wish' ? '이번달 구매예정으로 옮기기' : '위시리스트로 옮기기') + '">' + icon('swap') + '</button>' +
+          '</div>' +
+          memoHtml +
         '</div>' +
         '<button class="swipe-del" type="button" data-pdel="' + esc(it.id) + '" aria-label="삭제">' + trashSvg + '</button>' +
       '</div>';
@@ -1674,16 +1740,14 @@
       var privEditBtn = (isPriv && !locked) ? '<button class="priv-edit" type="button" data-priv-edit="1" aria-label="수정">' + privEditSvg + '</button>' : '';
       return '<div class="swipe-wrap">' +
         '<div class="pitem' + (it.done ? ' done' : '') + '" data-pid="' + esc(it.id) + '" data-sec="point"' + (isPriv ? ' data-private="1"' : '') + (locked ? ' data-locked="1"' : '') + ' role="button" tabindex="0">' +
-          '<button class="chk' + (it.done ? ' on' : '') + '" type="button" data-pcheck="' + esc(it.id) + '" aria-label="' + (it.done ? '구매 취소' : '구매 완료') + '" aria-pressed="' + (it.done ? 'true' : 'false') + '">' + icon('check') + '</button>' +
-          '<div class="p-body">' +
-            '<div class="p-line">' +
-              '<span class="p-name">' + nameHtml + '</span>' +
-              (it.amount ? '<span class="p-amt">' + won(it.amount) + '</span>' : '') +
-            '</div>' +
-            memoHtml +
+          '<div class="p-top">' +
+            '<button class="chk' + (it.done ? ' on' : '') + '" type="button" data-pcheck="' + esc(it.id) + '" aria-label="' + (it.done ? '구매 취소' : '구매 완료') + '" aria-pressed="' + (it.done ? 'true' : 'false') + '">' + icon('check') + '</button>' +
+            '<span class="p-name">' + nameHtml + '</span>' +
+            privEditBtn +
+            '<span class="p-grip" data-pgrip="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
           '</div>' +
-          privEditBtn +
-          '<span class="p-grip" data-pgrip="' + esc(it.id) + '" role="button" aria-label="순서 바꾸기" tabindex="-1">' + icon('grip') + '</span>' +
+          (it.amount ? '<div class="p-sub"><span class="p-amt">' + won(it.amount) + '</span></div>' : '') +
+          memoHtml +
         '</div>' +
         '<button class="swipe-del" type="button" data-pdel="' + esc(it.id) + '" aria-label="삭제">' + trashSvg + '</button>' +
       '</div>';
@@ -2241,7 +2305,7 @@
 
     function afterElement(container, x, y, dragged) {
       var els = Array.prototype.slice.call(container.querySelectorAll('.swipe-wrap'));
-      var isGrid = container.dataset.list === 'fixed';
+      var isGrid = container.dataset.list === 'fixed' || container.classList.contains('plan-list');
       if (isGrid) {
         for (var i = 0; i < els.length; i++) {
           var el = els[i];
@@ -2709,13 +2773,13 @@
       return best;
     }
 
-    function planAfterElement(list, y, dragged) {
-      var els = Array.prototype.slice.call(list.querySelectorAll('.swipe-wrap')).filter(function (x) { return x !== dragged; });
-      for (var i = 0; i < els.length; i++) {
-        var r = els[i].getBoundingClientRect();
-        if (y < r.top + r.height / 2) return els[i];
-      }
-      return null;
+    /* 2열 그리드에서도 좌우·상하로 자연스럽게 끼워 넣기 */
+    function planInsert(list, x, y, wrap) {
+      var after = afterElement(list, x, y, wrap);
+      var more = list.querySelector('.more-btn');
+      if (after) list.insertBefore(wrap, after);
+      else if (more) list.insertBefore(wrap, more);
+      else list.appendChild(wrap);
     }
 
     function isOverMonthOut(x, y) {
@@ -2754,9 +2818,7 @@
       if (pdrag.from === 'point') {
         var plist = el.planWrap.querySelector('.plan-list[data-point-list]');
         if (!plist) return;
-        var el2 = planAfterElement(plist, clientY, pdrag.wrap);
-        if (el2) plist.insertBefore(pdrag.wrap, el2);
-        else plist.appendChild(pdrag.wrap);
+        planInsert(plist, clientX, clientY, pdrag.wrap);
         floatFollow(pdrag.wrap, clientX, clientY, true);
         return;
       }
@@ -2778,9 +2840,7 @@
         l.classList.toggle('drop-over', l === list);
       });
       if (pdrag.wrap.parentElement !== list) list.appendChild(pdrag.wrap);
-      var after = planAfterElement(list, clientY, pdrag.wrap);
-      if (after) list.insertBefore(pdrag.wrap, after);
-      else list.appendChild(pdrag.wrap);
+      planInsert(list, clientX, clientY, pdrag.wrap);
       floatFollow(pdrag.wrap, clientX, clientY, true);
     }
 
@@ -3169,6 +3229,10 @@
         if (e.target.closest('[data-handle]')) return;
         var item = e.target.closest('.item');
         if (item) {
+          if (item.dataset.carry === '1') {
+            toast('전달 부족분은 [테마 · 데이터]에서 켜고 끌 수 있어요');
+            return;
+          }
           if (e.target.closest('[data-priv-edit]')) {
             openEditor({ mode: 'edit', id: item.dataset.id, group: item.dataset.group });
             return;
@@ -3188,6 +3252,10 @@
         var item = e.target.closest('.item');
         if (!item || e.target.closest('[data-check]')) return;
         e.preventDefault();
+        if (item.dataset.carry === '1') {
+          toast('전달 부족분은 [테마 · 데이터]에서 켜고 끌 수 있어요');
+          return;
+        }
         if (item.dataset.private === '1') {
           if (item.dataset.locked === '1') revealedIds[item.dataset.id] = true;
           else delete revealedIds[item.dataset.id];
@@ -3206,6 +3274,10 @@
         }
         var row = e.target.closest('.tl-row');
         if (row) {
+          if (row.dataset.id === 'carry_debt') {
+            toast('전달 부족분은 [테마 · 데이터]에서 켜고 끌 수 있어요');
+            return;
+          }
           if (row.dataset.private === '1') {
             if (row.dataset.locked === '1') revealedIds[row.dataset.id] = true;
             else delete revealedIds[row.dataset.id];
@@ -3404,8 +3476,17 @@
         $('themeList').querySelectorAll('.theme-opt').forEach(function (b) {
           b.classList.toggle('active', b.dataset.themePick === state.theme);
         });
+        $('fCarryDebt').checked = state.carryDebt !== false;
+        updateCarryDebtHint();
         $('themeBackdrop').classList.add('open');
         document.body.classList.add('locked');
+      });
+      $('fCarryDebt').addEventListener('change', function () {
+        state.carryDebt = !!this.checked;
+        saveState();
+        render();
+        updateCarryDebtHint();
+        toast(state.carryDebt ? '전달 마이너스를 이번달 지출에 넣어요' : '전달 마이너스를 넣지 않아요');
       });
       $('themeClose').addEventListener('click', closeTheme);
       $('themeBackdrop').addEventListener('click', function (e) {
